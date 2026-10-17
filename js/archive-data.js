@@ -5,7 +5,10 @@
    eigene Änderungen im Archiv bleiben erhalten. */
 "use strict";
 
-const ARCHIVE_VERSION = 2;
+const ARCHIVE_VERSION = 3;
+
+// Einträge früherer Archiv-Stände, die durch korrigierte ersetzt wurden (alte ID → neue Zeile mit Jahr)
+const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma"];
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo
@@ -237,12 +240,43 @@ const ARCHIVE_DEFAULT = [
   ["Ángel D'Agostino", "No aflojés", null, "Ángel Vargas", "tango"],
   ["Ángel D'Agostino", "Muchacho", null, "Ángel Vargas", "tango"],
 
-  // Rodolfo Biagi
-  ["Rodolfo Biagi", "Racing Club", null, "", "tango"],
-  ["Rodolfo Biagi", "Unión cívica", null, "", "tango"],
-  ["Rodolfo Biagi", "Lágrimas y sonrisas", null, "", "vals"],
-  ["Rodolfo Biagi", "Campo afuera", null, null, "milonga"],
-  ["Rodolfo Biagi", "Paloma", null, "Alberto Amor", "tango"],
+  // Rodolfo Biagi (Archiv-Stand 3, Daten aus Biagi-Diskografien)
+  ["Rodolfo Biagi", "Unión cívica", 1938, "", "tango"],
+  ["Rodolfo Biagi", "El incendio", 1938, "", "tango"],
+  ["Rodolfo Biagi", "Una pena", 1938, "Teófilo Ibáñez", "tango"],
+  ["Rodolfo Biagi", "Lejos de ti", 1938, "Teófilo Ibáñez", "vals"],
+  ["Rodolfo Biagi", "Loca de amor", 1938, "Teófilo Ibáñez", "vals"],
+  ["Rodolfo Biagi", "Viejo portón", 1938, null, "vals"],
+  ["Rodolfo Biagi", "Campo afuera", 1939, "Teófilo Ibáñez", "milonga"],
+  ["Rodolfo Biagi", "Pura clase", 1939, "", "tango"],
+  ["Rodolfo Biagi", "La maleva", 1939, "", "tango"],
+  ["Rodolfo Biagi", "Alma de bohemio", 1939, "Teófilo Ibáñez", "tango"],
+  ["Rodolfo Biagi", "Son cosas del bandoneón", 1939, "Andrés Falgás", "tango"],
+  ["Rodolfo Biagi", "Queja indiana", 1939, "Andrés Falgás", "tango"],
+  ["Rodolfo Biagi", "Dichas que viví", 1939, "Andrés Falgás", "vals"],
+  ["Rodolfo Biagi", "A mí no me interesa", 1940, "Andrés Falgás", "tango"],
+  ["Rodolfo Biagi", "Cicatrices", 1940, "Andrés Falgás", "tango"],
+  ["Rodolfo Biagi", "El estribo", 1940, "", "tango"],
+  ["Rodolfo Biagi", "Todo te nombra", 1940, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Por un beso de amor", 1940, "Jorge Ortiz", "vals"],
+  ["Rodolfo Biagi", "Humillación", 1941, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Pájaro ciego", 1941, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Zaraza", 1941, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Quejas de bandoneón", 1941, "", "tango"],
+  ["Rodolfo Biagi", "Didi", 1941, "", "tango"],
+  ["Rodolfo Biagi", "El entrerriano", 1941, "", "tango"],
+  ["Rodolfo Biagi", "Lágrimas y sonrisas", 1941, "", "vals"],
+  ["Rodolfo Biagi", "Cuatro palabras", 1941, "Jorge Ortiz", "vals"],
+  ["Rodolfo Biagi", "Marcheta", 1941, "", "vals"],
+  ["Rodolfo Biagi", "Picante", 1941, "", "milonga"],
+  ["Rodolfo Biagi", "Bélgica", 1942, "", "tango"],
+  ["Rodolfo Biagi", "Indiferencia", 1942, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Amor y vals", 1942, "Alberto Lago", "vals"],
+  ["Rodolfo Biagi", "Magdala", 1945, "Jorge Ortiz", "tango"],
+  ["Rodolfo Biagi", "Tus labios me dirán", 1945, "Alberto Amor", "tango"],
+  ["Rodolfo Biagi", "Paloma", 1945, "Alberto Amor", "vals"],
+  ["Rodolfo Biagi", "Flor de Monserrat", 1945, "Alberto Amor", "milonga"],
+  ["Rodolfo Biagi", "Racing Club", 1950, "", "tango"],
 
   // Alfredo De Angelis
   ["Alfredo De Angelis", "Pavadita", null, "", "tango"],

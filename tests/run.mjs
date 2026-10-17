@@ -172,8 +172,9 @@ await test("Spielrunde: abspielen, aufdecken, Punkte, nächster Spieler", async 
   assert.equal(await page.locator(".reveal .orq").textContent(), "Osvaldo Pugliese");
   await page.locator('.mark[data-k="orq"]').click();
   await page.locator('.mark[data-k="title"]').click();
-  assert.equal(await page.locator('.mark[data-k="year"]').count(), 1, "Jahr raten angeboten");
-  assert.match(await page.locator('.mark[data-k="year"]').textContent(), /Jahr ±2/);
+  const cur = await page.evaluate(() => { const st = JSON.parse(localStorage.getItem("orquesta.v1")); return st.archive.find((x) => x.id === st.game.current.songId); });
+  assert.equal(await page.locator('.mark[data-k="year"]').count(), cur.year ? 1 : 0, "Jahr raten nur bei bekanntem Jahr");
+  if (cur.year) assert.match(await page.locator('.mark[data-k="year"]').textContent(), /Jahr ±2/);
   await shot(page, "3-aufgedeckt-hell");
   await page.getByRole("button", { name: /\+2 für Sebastian/ }).click();
   await page.getByText("Am Zug").waitFor();
@@ -311,6 +312,21 @@ await test("Einstellungen: Punkte, Sänger-Bonus, Sicherung", async () => {
   const data = JSON.parse(fs.readFileSync(await dl.path(), "utf8"));
   assert.equal(data.app, "orquesta");
   assert.equal(data.archive.length, s.archive.length);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+await test("Archiv-Update: ersetzte Einträge werden ausgetauscht, Spotify-Zuordnung bleibt", async () => {
+  const old = { id: "rodolfo-biagi-paloma", orq: "Rodolfo Biagi", title: "Paloma", year: null, singer: "Alberto Amor", genre: "tango", active: true, source: "archiv", status: "ok", spotify: { uri: "spotify:track:pal", id: "pal", name: "Paloma" } };
+  const { page, ctx, errors } = await open({ auth: LOGGED, store: { seedVersion: 2, archive: [old] } });
+  const s = await store(page);
+  assert.equal(s.archive.filter((x) => x.title === "Paloma" && x.orq === "Rodolfo Biagi").length, 1);
+  const p = s.archive.find((x) => x.title === "Paloma" && x.orq === "Rodolfo Biagi");
+  assert.equal(p.year, 1945);
+  assert.equal(p.genre, "vals");
+  assert.equal(p.spotify.uri, "spotify:track:pal");
+  assert.equal(p.status, "ok");
+  assert.ok(s.archive.filter((x) => x.orq === "Rodolfo Biagi").length >= 30);
   assert.deepEqual(errors, []);
   await ctx.close();
 });

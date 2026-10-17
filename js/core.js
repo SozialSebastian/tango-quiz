@@ -81,12 +81,20 @@ function save() {
 function songId(orq, title, year) { return norm(`${orq} ${title} ${year || ""}`).replace(/ /g, "-"); }
 function seedArchive(force = false) {
   if (!force && store.seedVersion >= ARCHIVE_VERSION) return false;
+  // ersetzte Standard-Songs entfernen; eine Spotify-Zuordnung wandert zum neuen Eintrag
+  const carried = new Map();
+  store.archive = store.archive.filter((s) => {
+    if (s.source !== "archiv" || !ARCHIVE_REPLACED.includes(s.id)) return true;
+    if (s.spotify) carried.set(norm(`${s.orq} ${s.title}`), { spotify: s.spotify, status: s.status, active: s.active });
+    return false;
+  });
   const have = new Set(store.archive.map((s) => s.id));
   let added = 0;
   for (const [orq, title, year, singer, genre] of ARCHIVE_DEFAULT) {
     const id = songId(orq, title, year);
     if (have.has(id) || (!force && store.removed.includes(id))) continue;
-    store.archive.push({ id, orq, title, year, singer, genre, active: true, source: "archiv", spotify: null, status: "open" });
+    const c = carried.get(norm(`${orq} ${title}`));
+    store.archive.push({ id, orq, title, year, singer, genre, active: c ? c.active : true, source: "archiv", spotify: c ? c.spotify : null, status: c ? c.status : "open" });
     added++;
   }
   if (force) store.removed = [];
