@@ -226,7 +226,7 @@ function trackInfo(t) {
 }
 
 async function searchTracks(q) {
-  const j = await api("/search", { query: { q, type: "track", limit: 10, market: "from_token" } });
+  const j = await api("/search", { query: { q, type: "track", limit: 10 } });
   return ((j && j.tracks && j.tracks.items) || []).filter(Boolean);
 }
 
@@ -237,8 +237,7 @@ async function findCandidates(song) {
   queries.push(`track:${song.title} artist:${key}`);
   const seen = new Map();
   for (const q of queries) {
-    let items = [];
-    try { items = await searchTracks(q); } catch (e) { if (e.status === 429 || e.status === 401) throw e; }
+    const items = await searchTracks(q);   // Fehler nicht verschlucken – sonst gilt der Song fälschlich als „nicht gefunden“
     for (const t of items) if (!seen.has(t.id)) seen.set(t.id, { t, s: scoreTrack(song, t) });
     const best = [...seen.values()].sort((a, b) => b.s.total - a.s.total)[0];
     if (best && best.s.ok && best.s.total >= 85) break;   // eindeutig genug, zweite Suche sparen
@@ -250,6 +249,7 @@ async function findCandidates(song) {
 async function matchSong(song) {
   const c = await findCandidates(song);
   const best = c[0];
+  song.lastSearch = { n: c.length, best: best ? `${best.t.name} – ${(best.t.artists || []).map((a) => a.name).join(", ")}` : "" };
   if (best && best.s.ok) {
     song.spotify = trackInfo(best.t);
     song.status = "auto";
@@ -267,7 +267,7 @@ function parseSpotifyId(input, kind) {
   return /^[A-Za-z0-9]{22}$/.test(s) ? s : null;
 }
 
-async function trackById(id) { return api(`/tracks/${id}`, { query: { market: "from_token" } }); }
+async function trackById(id) { return api(`/tracks/${id}`); }
 
 /* ================= Playlists ================= */
 async function myPlaylists() {
@@ -289,7 +289,7 @@ async function playlistTracks(id) {
   let offset = 0;
   for (let i = 0; i < 40; i++) {
     let j;
-    try { j = await api(`/playlists/${id}/items`, { query: { limit: 50, offset, market: "from_token" } }); }
+    try { j = await api(`/playlists/${id}/items`, { query: { limit: 50, offset } }); }
     catch (e) {
       if (e.status === 403 || e.status === 404) throw new SpotifyError(e.status, "PLAYLIST", "Spotify gibt nur eigene oder gemeinsame Playlists frei. Kopiere die Playlist in Spotify in eine eigene („Zu anderer Playlist hinzufügen“) und importiere dann diese.");
       throw e;

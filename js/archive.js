@@ -145,7 +145,7 @@ function spotifyBlock(s) {
       <div class="row-btns">
         <button class="btn" data-act="preview" data-uri="${esc(sp.uri)}">▶ Probehören</button>
         ${s.status !== "ok" ? `<button class="btn" data-act="confirmTrack" data-id="${esc(s.id)}">✓ Passt</button>` : ""}
-      </div>` : `<p class="muted">${s.status === "missing" ? "Nicht automatisch gefunden." : "Noch nicht zugeordnet."}</p>`}
+      </div>` : `<p class="muted">${s.status === "missing" ? `Nicht automatisch gefunden${s.lastSearch ? ` – ${s.lastSearch.n} Treffer${s.lastSearch.best ? `, bester: ${esc(s.lastSearch.best)}` : ""}` : ""}.` : "Noch nicht zugeordnet."}</p>`}
     <div class="row-btns">
       <button class="btn" data-act="findTracks" data-id="${esc(s.id)}" ${isLoggedIn() ? "" : "disabled"}>Auf Spotify suchen</button>
     </div>

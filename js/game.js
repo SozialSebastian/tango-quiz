@@ -277,7 +277,7 @@ async function ensureTrack(g) {
     if (song.spotify && song.spotify.uri) return song;
     const found = await matchSong(song);
     if (found) return song;
-    toast(`„${song.title}“ (${song.orq}) nicht auf Spotify gefunden – nächster Song.`);
+    toast(`„${song.title}“ (${song.orq}) nicht auf Spotify gefunden${song.lastSearch && song.lastSearch.n ? ` (${song.lastSearch.n} Treffer, keiner passend)` : " (0 Treffer)"} – nächster Song.`, 4000);
     const n = nextSong(g);
     if (!n) return null;
     g.current = { songId: n.id, phase: "ready", marks: {}, pos: null };

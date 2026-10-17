@@ -63,6 +63,8 @@ function loadStore() {
   s.game = s.game || null;
   s.seedVersion = s.seedVersion || 0;
   s.removed = Array.isArray(s.removed) ? s.removed : [];   // gelöschte Standard-Songs nicht wieder anlegen
+  // Version 2: Songs, die wegen eines verschluckten Suchfehlers als „nicht gefunden“ markiert wurden, neu suchen
+  if ((s.fix || 0) < 2) { for (const x of s.archive) if (x.status === "missing") x.status = "open"; s.fix = 2; }
   return s;
 }
 
