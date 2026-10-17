@@ -5,7 +5,7 @@
    eigene Änderungen im Archiv bleiben erhalten. */
 "use strict";
 
-const ARCHIVE_VERSION = 1;
+const ARCHIVE_VERSION = 2;
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo
@@ -136,7 +136,127 @@ const ARCHIVE_DEFAULT = [
   ["Edgardo Donato", "Carnaval de mi barrio", 1939, null, "milonga"],
 
   // Enrique Rodríguez
-  ["Enrique Rodríguez", "Llorar por una mujer", 1941, "Armando Moreno", "tango"]
+  ["Enrique Rodríguez", "Llorar por una mujer", 1941, "Armando Moreno", "tango"],
+  /* ===== Ergänzung (Archiv-Stand 2): weitere bekannte Aufnahmen ===== */
+  // Juan D'Arienzo (Daten aus der D'Arienzo-Diskografie)
+  ["Juan D'Arienzo", "Pabellón de las rosas", 1935, null, "vals"],
+  ["Juan D'Arienzo", "Orillas del Plata", 1935, null, "vals"],
+  ["Juan D'Arienzo", "Una lágrima", 1936, null, "vals"],
+  ["Juan D'Arienzo", "Visión celeste", 1936, null, "vals"],
+  ["Juan D'Arienzo", "Silueta porteña", 1936, "Walter Cabral", "milonga"],
+  ["Juan D'Arienzo", "Mentías", 1937, null, "vals"],
+  ["Juan D'Arienzo", "Valsecito criollo", 1937, null, "vals"],
+  ["Juan D'Arienzo", "No mientas", 1938, "Alberto Echagüe", "tango"],
+  ["Juan D'Arienzo", "Milonga querida", 1938, "Alberto Echagüe", "milonga"],
+  ["Juan D'Arienzo", "Estampa de varón", 1938, "Alberto Echagüe", "milonga"],
+  ["Juan D'Arienzo", "Felicia", 1939, "", "tango"],
+  ["Juan D'Arienzo", "El Marne", 1939, "", "tango"],
+  ["Juan D'Arienzo", "Castigo", 1939, "Alberto Echagüe", "vals"],
+  ["Juan D'Arienzo", "Ay Aurora", 1939, "Alberto Echagüe", "vals"],
+  ["Juan D'Arienzo", "Meta fierro", 1939, "Alberto Echagüe", "milonga"],
+  ["Juan D'Arienzo", "De antaño", 1939, "Alberto Echagüe", "milonga"],
+  ["Juan D'Arienzo", "La cicatriz", 1939, "Alberto Echagüe", "milonga"],
+  ["Juan D'Arienzo", "Salí de perdedor", 1940, "Alberto Reynal", "milonga"],
+  ["Juan D'Arienzo", "Flor del mal", 1940, "Héctor Mauré", "vals"],
+  ["Juan D'Arienzo", "Adiós querida", 1941, "Héctor Mauré", "vals"],
+  ["Juan D'Arienzo", "El vals de los abuelos", 1941, "Héctor Mauré", "vals"],
+  ["Juan D'Arienzo", "Tirando a matar", 1942, "Héctor Mauré", "milonga"],
+  ["Juan D'Arienzo", "Cortada de San Ignacio", 1942, "Héctor Mauré", "milonga"],
+  ["Juan D'Arienzo", "Tu pañuelo", 1942, "Héctor Mauré", "vals"],
+  ["Juan D'Arienzo", "Pampa", 1951, "", "tango"],
+  ["Juan D'Arienzo", "Independencia", null, "", "tango"],
+  ["Juan D'Arienzo", "El internado", null, "", "tango"],
+  ["Juan D'Arienzo", "El entrerriano", null, "", "tango"],
+
+  // Carlos Di Sarli
+  ["Carlos Di Sarli", "Mi refugio", 1941, "", "tango"],
+  ["Carlos Di Sarli", "Tierra negra", 1943, "", "tango"],
+  ["Carlos Di Sarli", "Ojos negros", 1945, "", "tango"],
+  ["Carlos Di Sarli", "El caburé", 1946, "", "tango"],
+  ["Carlos Di Sarli", "El pollito", 1947, "", "tango"],
+  ["Carlos Di Sarli", "El once", 1954, "", "tango"],
+  ["Carlos Di Sarli", "La cumparsita", 1955, "", "tango"],
+  ["Carlos Di Sarli", "Cascabelito", null, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Charlemos", null, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Griseta", null, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Rosamel", null, "Roberto Rufino", "vals"],
+  ["Carlos Di Sarli", "Alma mía", null, "Roberto Rufino", "vals"],
+  ["Carlos Di Sarli", "Pena mulata", null, "Roberto Rufino", "milonga"],
+  ["Carlos Di Sarli", "La capilla blanca", null, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Nada", null, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Porteño y bailarín", null, "Jorge Durán", "tango"],
+  ["Carlos Di Sarli", "Patotero sentimental", null, "Mario Pomar", "tango"],
+
+  // Osvaldo Pugliese
+  ["Osvaldo Pugliese", "Farol", null, "Roberto Chanel", "tango"],
+  ["Osvaldo Pugliese", "La beba", null, "", "tango"],
+  ["Osvaldo Pugliese", "La rayuela", null, "", "tango"],
+  ["Osvaldo Pugliese", "El rodeo", null, "", "tango"],
+  ["Osvaldo Pugliese", "Pata ancha", null, "", "tango"],
+  ["Osvaldo Pugliese", "Desde el alma", null, "", "vals"],
+  ["Osvaldo Pugliese", "Nochero soy", null, "Alberto Morán", "tango"],
+  ["Osvaldo Pugliese", "Remembranza", null, "Alberto Morán", "tango"],
+
+  // Aníbal Troilo
+  ["Aníbal Troilo", "Yo soy el tango", 1941, "Francisco Fiorentino", "tango"],
+  ["Aníbal Troilo", "Tinta roja", 1941, "Francisco Fiorentino", "tango"],
+  ["Aníbal Troilo", "Malena", 1942, "Francisco Fiorentino", "tango"],
+  ["Aníbal Troilo", "Gricel", 1942, "Francisco Fiorentino", "tango"],
+  ["Aníbal Troilo", "Cachirulo", null, "", "tango"],
+  ["Aníbal Troilo", "Romance de barrio", 1947, "Floreal Ruiz", "vals"],
+
+  // Miguel Caló
+  ["Miguel Caló", "Yo soy el tango", null, "Alberto Podestá", "tango"],
+  ["Miguel Caló", "Lejos de Buenos Aires", null, "Raúl Berón", "tango"],
+  ["Miguel Caló", "Trasnochando", null, "Raúl Berón", "tango"],
+  ["Miguel Caló", "Dos fracasos", null, "Raúl Iriarte", "tango"],
+  ["Miguel Caló", "Flor de lino", null, "Raúl Iriarte", "vals"],
+
+  // Francisco Canaro
+  ["Francisco Canaro", "Desde el alma", null, "Nelly Omar", "vals"],
+  ["Francisco Canaro", "El llorón", null, "Ernesto Famá", "milonga"],
+  ["Francisco Canaro", "Parque Patricios", null, "Ernesto Famá", "milonga"],
+  ["Francisco Canaro", "Reliquias porteñas", null, "", "milonga"],
+  ["Francisco Canaro", "Milonga de mis amores", null, "Roberto Maida", "milonga"],
+  ["Francisco Canaro", "Retintín", null, "Roberto Maida", "vals"],
+
+  // Ricardo Tanturi
+  ["Ricardo Tanturi", "Pocas palabras", null, "Alberto Castillo", "tango"],
+  ["Ricardo Tanturi", "La vida es corta", null, "Alberto Castillo", "tango"],
+  ["Ricardo Tanturi", "Cuatro compases", null, "Alberto Castillo", "tango"],
+  ["Ricardo Tanturi", "Oigo tu voz", null, "Enrique Campos", "tango"],
+  ["Ricardo Tanturi", "Encuentro", null, "Enrique Campos", "tango"],
+
+  // Pedro Laurenz
+  ["Pedro Laurenz", "Desconsuelo", null, "Juan Carlos Casas", "tango"],
+  ["Pedro Laurenz", "Orgullo criollo", null, "", "tango"],
+  ["Pedro Laurenz", "Garúa", null, "Alberto Podestá", "tango"],
+  ["Pedro Laurenz", "Paisaje", null, "Alberto Podestá", "vals"],
+
+  // Ángel D'Agostino
+  ["Ángel D'Agostino", "No aflojés", null, "Ángel Vargas", "tango"],
+  ["Ángel D'Agostino", "Muchacho", null, "Ángel Vargas", "tango"],
+
+  // Rodolfo Biagi
+  ["Rodolfo Biagi", "Racing Club", null, "", "tango"],
+  ["Rodolfo Biagi", "Unión cívica", null, "", "tango"],
+  ["Rodolfo Biagi", "Lágrimas y sonrisas", null, "", "vals"],
+  ["Rodolfo Biagi", "Campo afuera", null, null, "milonga"],
+  ["Rodolfo Biagi", "Paloma", null, "Alberto Amor", "tango"],
+
+  // Alfredo De Angelis
+  ["Alfredo De Angelis", "Pavadita", null, "", "tango"],
+  ["Alfredo De Angelis", "Pregonera", null, "Carlos Dante", "tango"],
+
+  // Osvaldo Fresedo
+  ["Osvaldo Fresedo", "Sollozos", null, "Roberto Ray", "tango"],
+
+  // Enrique Rodríguez
+  ["Enrique Rodríguez", "Cómo has cambiado pebeta", null, "Armando Moreno", "tango"],
+
+  // Orquesta Típica Victor
+  ["Orquesta Típica Victor", "Pato", null, "", "tango"],
+  ["Orquesta Típica Victor", "Puente Alsina", null, "", "tango"]
 ];
 
 /* Orchester mit Suchbegriffen für Spotify und für den Playlist-Import (Namen dort sind oft lang,
