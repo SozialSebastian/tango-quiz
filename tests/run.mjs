@@ -69,7 +69,7 @@ async function open({ auth, settings, store, dark, noDevice, url = "" } = {}) {
     if (p === "/me/playlists") return json(r, { items: [{ id: "PL1", name: "Tandas Sonntag", owner: { id: "seb" }, items: { total: 3 } }, { id: "PL2", name: "Fremde", owner: { id: "x" }, items: { total: 9 } }], next: null });
     if (p === "/playlists/PL1/items") return json(r, { items: [
       { item: track("a1", "Zorro gris", "Francisco Canaro", { album: "Bailando 1942" }) },
-      { item: track("a2", "Pocas palabras", "Ricardo Tanturi y su Orquesta Típica", { singer: "Alberto Castillo" }) },
+      { item: track("a2", "Mozo guapo", "Ricardo Tanturi y su Orquesta Típica", { singer: "Alberto Castillo" }) },
       { item: track("a3", "Milonga sentimental", "Francisco Canaro") },
       { item: track("a4", "La yumba", "Osvaldo Pugliese") }
     ], next: null });
@@ -287,7 +287,7 @@ await test("Playlist-Import: eigene Playlists, Doppelte überspringen, Angaben a
   await page.getByRole("button", { name: "2 importieren" }).click();
   const s = await store(page);
   assert.equal(s.archive.length, before + 2);
-  const pocas = s.archive.find((x) => x.title === "Pocas palabras");
+  const pocas = s.archive.find((x) => x.title === "Mozo guapo");
   assert.equal(pocas.orq, "Ricardo Tanturi");
   assert.equal(pocas.singer, "Alberto Castillo");
   const zorro = s.archive.find((x) => x.title === "Zorro gris");
