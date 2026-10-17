@@ -5,10 +5,13 @@
    eigene Änderungen im Archiv bleiben erhalten. */
 "use strict";
 
-const ARCHIVE_VERSION = 3;
+const ARCHIVE_VERSION = 4;
 
 // Einträge früherer Archiv-Stände, die durch korrigierte ersetzt wurden (alte ID → neue Zeile mit Jahr)
-const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma"];
+const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma",
+  // Stand 4: Jahre ergänzt bzw. korrigiert
+  "carlos-di-sarli-griseta", "carlos-di-sarli-alma-mia", "carlos-di-sarli-pena-mulata", "carlos-di-sarli-la-capilla-blanca",
+  "carlos-di-sarli-nada", "carlos-di-sarli-porteno-y-bailarin", "carlos-di-sarli-patotero-sentimental", "anibal-troilo-c-t-v-1941"];
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo
@@ -84,7 +87,6 @@ const ARCHIVE_DEFAULT = [
 
   // Aníbal Troilo
   ["Aníbal Troilo", "Comme il faut", 1938, "", "tango"],
-  ["Aníbal Troilo", "C.T.V.", 1941, "", "tango"],
   ["Aníbal Troilo", "Toda mi vida", 1941, "Francisco Fiorentino", "tango"],
   ["Aníbal Troilo", "Te aconsejo que me olvides", 1941, "Francisco Fiorentino", "tango"],
   ["Aníbal Troilo", "Pájaro ciego", 1941, "Francisco Fiorentino", "tango"],
@@ -181,14 +183,7 @@ const ARCHIVE_DEFAULT = [
   ["Carlos Di Sarli", "La cumparsita", 1955, "", "tango"],
   ["Carlos Di Sarli", "Cascabelito", null, "Roberto Rufino", "tango"],
   ["Carlos Di Sarli", "Charlemos", null, "Roberto Rufino", "tango"],
-  ["Carlos Di Sarli", "Griseta", null, "Roberto Rufino", "tango"],
   ["Carlos Di Sarli", "Rosamel", null, "Roberto Rufino", "vals"],
-  ["Carlos Di Sarli", "Alma mía", null, "Roberto Rufino", "vals"],
-  ["Carlos Di Sarli", "Pena mulata", null, "Roberto Rufino", "milonga"],
-  ["Carlos Di Sarli", "La capilla blanca", null, "Alberto Podestá", "tango"],
-  ["Carlos Di Sarli", "Nada", null, "Alberto Podestá", "tango"],
-  ["Carlos Di Sarli", "Porteño y bailarín", null, "Jorge Durán", "tango"],
-  ["Carlos Di Sarli", "Patotero sentimental", null, "Mario Pomar", "tango"],
 
   // Osvaldo Pugliese
   ["Osvaldo Pugliese", "Farol", null, "Roberto Chanel", "tango"],
@@ -290,7 +285,71 @@ const ARCHIVE_DEFAULT = [
 
   // Orquesta Típica Victor
   ["Orquesta Típica Victor", "Pato", null, "", "tango"],
-  ["Orquesta Típica Victor", "Puente Alsina", null, "", "tango"]
+  ["Orquesta Típica Victor", "Puente Alsina", null, "", "tango"],
+
+  /* ===== Archiv-Stand 4: Troilo mit Floreal Ruiz, Di Sarli mit Rufino und Podestá ===== */
+  // Aníbal Troilo – Floreal Ruiz
+  ["Aníbal Troilo", "Marioneta", 1944, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Naranjo en flor", 1944, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Luna llena", 1944, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Palomita blanca", 1944, "Floreal Ruiz, Alberto Marino", "vals"],
+  ["Aníbal Troilo", "Equipaje", 1945, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "La noche que te fuiste", 1945, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Yuyo verde", 1945, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Llorarás, llorarás", 1945, "Floreal Ruiz", "vals"],
+  ["Aníbal Troilo", "Cimarrón de ausencia", 1945, "Floreal Ruiz, Alberto Marino", "tango"],
+  ["Aníbal Troilo", "Adiós pampa mía", 1945, "Floreal Ruiz, Alberto Marino", "tango"],
+  ["Aníbal Troilo", "Tarde gris", 1946, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Confesión", 1947, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Y dicen que no te quiero", 1947, "Floreal Ruiz", "tango"],
+  ["Aníbal Troilo", "Flor de lino", 1947, "Floreal Ruiz", "vals"],
+  // Aníbal Troilo – weitere Klassiker
+  ["Aníbal Troilo", "C.T.V.", 1942, "", "tango"],
+  ["Aníbal Troilo", "Cordón de oro", 1941, "", "tango"],
+  ["Aníbal Troilo", "Guapeando", 1941, "", "tango"],
+  ["Aníbal Troilo", "Milongueando en el 40", 1941, "", "tango"],
+  ["Aníbal Troilo", "La tablada", 1942, "", "tango"],
+  ["Aníbal Troilo", "Pedacito de cielo", 1942, "Francisco Fiorentino", "vals"],
+  ["Aníbal Troilo", "Papá Baltasar", 1942, "Francisco Fiorentino", "milonga"],
+  ["Aníbal Troilo", "Ficha de oro", 1942, "Francisco Fiorentino", "milonga"],
+  ["Aníbal Troilo", "Valsecito amigo", 1943, "Francisco Fiorentino", "vals"],
+  ["Aníbal Troilo", "Margarita Gauthier", 1943, "Francisco Fiorentino", "tango"],
+
+  // Carlos Di Sarli – Roberto Rufino
+  ["Carlos Di Sarli", "En un beso la vida", 1940, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Volver a soñar", 1940, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Alma mía", 1940, "Roberto Rufino", "vals"],
+  ["Carlos Di Sarli", "Griseta", 1941, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "La mulateada", 1941, "Roberto Rufino", "milonga"],
+  ["Carlos Di Sarli", "Pena mulata", 1941, "Roberto Rufino", "milonga"],
+  ["Carlos Di Sarli", "Zorzal", 1941, "Roberto Rufino", "milonga"],
+  ["Carlos Di Sarli", "Decime qué pasó", 1942, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Otra vez carnaval", 1942, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Tarareando", 1942, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Cuando un viejo se enamora", 1942, "Roberto Rufino", "milonga"],
+  ["Carlos Di Sarli", "Adiós te vas", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Anselmo Acuña el resero", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Canta, pajarito", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Cómo se hace un tango", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Cornetín", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Los muñequitos", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Navegante", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Tristeza marina", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Zorro plateado", 1943, "Roberto Rufino", "tango"],
+  ["Carlos Di Sarli", "Un día llegará", 1943, "Roberto Rufino", "vals"],
+  // Carlos Di Sarli – Alberto Podestá und weitere
+  ["Carlos Di Sarli", "Nido gaucho", 1942, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Va a cantar un ruiseñor", 1942, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Alzame en tus brazos", 1942, "Alberto Podestá", "vals"],
+  ["Carlos Di Sarli", "Rosas de otoño", 1942, "Alberto Podestá", "vals"],
+  ["Carlos Di Sarli", "Estampa federal", 1942, "Alberto Podestá", "vals"],
+  ["Carlos Di Sarli", "Julián Centeya", 1942, "Alberto Podestá", "milonga"],
+  ["Carlos Di Sarli", "Entre pitada y pitada", 1942, "Alberto Podestá", "milonga"],
+  ["Carlos Di Sarli", "La capilla blanca", 1944, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Nada", 1944, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Lloran las campanas", 1944, "Alberto Podestá", "tango"],
+  ["Carlos Di Sarli", "Porteño y bailarín", 1945, "Jorge Durán", "tango"],
+  ["Carlos Di Sarli", "Patotero sentimental", 1954, "Mario Pomar", "tango"]
 ];
 
 /* Orchester mit Suchbegriffen für Spotify und für den Playlist-Import (Namen dort sind oft lang,
