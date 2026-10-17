@@ -195,7 +195,7 @@ input.search { margin: 12px 0 2px; border-radius: 999px; padding-left: 16px; }
 .reveal .orq { font: 700 30px/1.1 var(--serif); margin: 0 0 14px; text-transform: none; letter-spacing: 0; color: var(--ink); }
 .reveal .title { font: italic 600 26px/1.15 var(--serif); margin: 0 0 10px; }
 .reveal .meta { margin-bottom: 6px; }
-.marks { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 10px 0; }
+.marks { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin: 10px 0; }
 .mark {
   display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 76px; justify-content: center;
   border-radius: var(--r-lg); border: 2px solid var(--line); background: var(--surface); font-weight: 600;
@@ -262,3 +262,25 @@ dialog#sheet::backdrop { background: rgba(20, 8, 10, .45); }
   background: var(--ink); color: var(--bg); font-size: 15px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 30;
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Jahr beim Aufdecken */
+.reveal .year { font: 700 24px/1.1 var(--serif); margin: 0 0 10px; color: var(--gold); }
+
+/* Gespielte Spiele und Details */
+.row.past { align-items: center; }
+details.pl > summary, details.all-turns > summary { list-style: none; cursor: pointer; }
+details.pl > summary::-webkit-details-marker, details.all-turns > summary::-webkit-details-marker { display: none; }
+details.pl + details.pl > summary { border-top: 1px solid var(--line); }
+details[open] > summary .chev { transform: rotate(90deg); }
+.chev { transition: transform .2s; display: inline-block; }
+.turns { padding: 0 12px 10px; display: grid; gap: 8px; }
+.turn { background: var(--bg); border-radius: var(--r-sm); padding: 10px 12px; }
+.turn-top { display: flex; gap: 10px; align-items: flex-start; }
+.turn-pts { font: 700 18px var(--serif); color: var(--ok); flex: none; }
+.turn-pts.zero { color: var(--ink-2); }
+.ticks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.tickchip { font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); }
+.tickchip.yes { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, var(--line)); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.tickchip.no { color: var(--ink-2); }
+.who-small { font-size: 13px; font-weight: 700; color: var(--c); padding: 3px 0; margin-right: 2px; }
+details.all-turns { overflow: hidden; }

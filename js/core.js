@@ -40,7 +40,9 @@ const GENRES = { tango: "Tango", vals: "Vals", milonga: "Milonga" };
 /* ================= Speicher ================= */
 const DEFAULT_SETTINGS = {
   clientId: "",
-  points: { orq: 1, title: 1, singer: 1 },
+  points: { orq: 1, title: 1, year: 1, singer: 1 },
+  year: true,           // Jahr raten
+  yearTol: 2,           // Jahr zählt als richtig bei ± so vielen Jahren (0 = genau)
   singer: false,        // Sänger als Bonus raten
   start: "begin",       // begin | random
   repeat: true,         // Song läuft in Schleife, bis „Weiter“
@@ -61,6 +63,7 @@ function loadStore() {
   s.settings.points = { ...DEFAULT_SETTINGS.points, ...(s.settings.points || {}) };
   s.settings.genres = { ...DEFAULT_SETTINGS.genres, ...(s.settings.genres || {}) };
   s.game = s.game || null;
+  s.games = Array.isArray(s.games) ? s.games : [];      // abgeschlossene Spiele, neueste zuerst
   s.seedVersion = s.seedVersion || 0;
   s.removed = Array.isArray(s.removed) ? s.removed : [];   // gelöschte Standard-Songs nicht wieder anlegen
   // Version 2: Songs, die wegen eines verschluckten Suchfehlers als „nicht gefunden“ markiert wurden, neu suchen

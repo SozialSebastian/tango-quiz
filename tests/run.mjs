@@ -172,6 +172,8 @@ await test("Spielrunde: abspielen, aufdecken, Punkte, nächster Spieler", async 
   assert.equal(await page.locator(".reveal .orq").textContent(), "Osvaldo Pugliese");
   await page.locator('.mark[data-k="orq"]').click();
   await page.locator('.mark[data-k="title"]').click();
+  assert.equal(await page.locator('.mark[data-k="year"]').count(), 1, "Jahr raten angeboten");
+  assert.match(await page.locator('.mark[data-k="year"]').textContent(), /Jahr ±2/);
   await shot(page, "3-aufgedeckt-hell");
   await page.getByRole("button", { name: /\+2 für Sebastian/ }).click();
   await page.getByText("Am Zug").waitFor();
@@ -196,8 +198,29 @@ await test("Spielende nach eingestellten Runden mit Rangliste", async () => {
   await page.getByText("Ergebnis").waitFor();
   assert.equal(await page.locator(".hero h1").textContent(), "Bea");
   await shot(page, "4-ergebnis-hell");
+  // Details aufklappen: was hat Bea richtig?
+  await page.locator("details.pl summary", { hasText: "Bea" }).click();
+  assert.equal(await page.locator("details.pl[open] .turn").count(), 3);
+  assert.equal(await page.locator("details.pl[open] .tickchip.yes").count(), 3, "Bea: dreimal Orchester richtig");
+  await shot(page, "4b-ergebnis-details-hell");
+  let s = await store(page);
+  assert.equal(s.games.length, 1, "Spiel im Verlauf gespeichert");
+  assert.equal(s.games[0].turns.length, 6);
+  assert.ok(s.games[0].turns[0].song.title, "Song-Angaben kopiert");
   await page.getByRole("button", { name: "Nochmal mit denselben Spielern" }).click();
   assert.equal((await store(page)).game.players.map((p) => p.score).join(), "0,0");
+  // Verlauf auf der Startseite
+  await page.getByRole("button", { name: "Beenden" }).click();     // Spiel ohne Songs → nicht gespeichert
+  await page.getByRole("button", { name: "Neues Spiel einrichten" }).click();
+  await page.getByText("Gespielte Spiele").waitFor();
+  assert.equal(await page.locator(".row.past").count(), 1);
+  await page.locator(".row.past").click();
+  await page.locator("#sheet details.pl summary", { hasText: "Ana" }).click();
+  assert.equal(await page.locator("#sheet details.pl[open] .turn").count(), 3);
+  await shot(page, "4c-verlauf-hell");
+  await page.getByRole("button", { name: "Spiel aus dem Verlauf löschen" }).click();
+  s = await store(page);
+  assert.equal(s.games.length, 0);
   assert.deepEqual(errors, []);
   await ctx.close();
 });

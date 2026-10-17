@@ -36,6 +36,13 @@ function renderSettings() {
     <section class="card list">
       ${pointRow("orq", "Orchester")}
       ${pointRow("title", "Titel")}
+      <label class="row check"><span class="grow">Jahr raten</span>
+        <input type="checkbox" class="switch" data-change="setYear" ${s.year ? "checked" : ""}></label>
+      ${s.year ? `${pointRow("year", "Jahr")}
+      <div class="row"><span class="grow">Jahr zählt als richtig</span>
+        <div class="seg small" role="radiogroup" aria-label="Toleranz beim Jahr">
+          ${[0, 2, 5].map((t) => `<button role="radio" aria-checked="${s.yearTol === t}" data-act="setYearTol" data-v="${t}">${t ? `±${t}` : "genau"}</button>`).join("")}
+        </div></div>` : ""}
       <label class="row check"><span class="grow">Sänger als Bonus<br><span class="muted small">auch „instrumental“ erkennen zählt</span></span>
         <input type="checkbox" class="switch" data-change="setSinger" ${s.singer ? "checked" : ""}></label>
       ${s.singer ? pointRow("singer", "Sänger") : ""}
@@ -43,7 +50,7 @@ function renderSettings() {
 
     <h2>Archiv</h2>
     <section class="card list">
-      <button class="row" data-act="exportArchive"><span class="grow">Sicherung speichern</span><span class="chev">›</span></button>
+      <button class="row" data-act="exportArchive"><span class="grow">Sicherung speichern<br><span class="muted small">Archiv und gespielte Spiele</span></span><span class="chev">›</span></button>
       <label class="row file-row"><span class="grow">Sicherung laden</span><span class="chev">›</span>
         <input type="file" accept="application/json,.json" data-change="importArchive" hidden></label>
       <button class="row" data-act="reseed"><span class="grow">Fehlende Standard-Songs wiederherstellen</span><span class="chev">›</span></button>
@@ -73,6 +80,8 @@ actions.copyRedirect = async () => {
 };
 actions.setStart = (el) => { store.settings.start = el.dataset.v; save(); renderSettings(); };
 actions.setRepeat = (el) => { store.settings.repeat = el.checked; save(); };
+actions.setYear = (el) => { store.settings.year = el.checked; save(); renderSettings(); };
+actions.setYearTol = (el) => { store.settings.yearTol = +el.dataset.v; save(); renderSettings(); };
 actions.setSinger = (el) => { store.settings.singer = el.checked; save(); renderSettings(); };
 actions.pts = (el) => {
   const p = store.settings.points;
@@ -81,7 +90,7 @@ actions.pts = (el) => {
 };
 
 actions.exportArchive = () => {
-  const data = JSON.stringify({ app: "orquesta", version: 1, exported: new Date().toISOString(), archive: store.archive, removed: store.removed }, null, 1);
+  const data = JSON.stringify({ app: "orquesta", version: 1, exported: new Date().toISOString(), archive: store.archive, removed: store.removed, games: store.games }, null, 1);
   const blob = new Blob([data], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -99,6 +108,7 @@ actions.importArchive = async (el) => {
     if (!confirm(`Archiv mit ${j.archive.length} Songs laden? Das aktuelle Archiv wird ersetzt.`)) return;
     store.archive = j.archive.filter((s) => s && s.id && s.orq && s.title);
     store.removed = Array.isArray(j.removed) ? j.removed : [];
+    if (Array.isArray(j.games)) store.games = j.games;
     save(); toast(`${store.archive.length} Songs geladen.`); renderSettings();
   } catch (e) { toast(e.message || "Datei nicht lesbar."); }
   finally { el.value = ""; }

@@ -25,6 +25,17 @@ function nextSong(g) {
 }
 const songById = (id) => store.archive.find((s) => s.id === id);
 
+/* ================= Was geraten wird ================= */
+// Kategorien für einen Song nach den aktuellen Einstellungen
+function guessCats(song, st = store.settings) {
+  const p = st.points;
+  const cats = [{ k: "orq", label: "Orchester", pts: p.orq }, { k: "title", label: "Titel", pts: p.title }];
+  if (st.year && song && song.year) cats.push({ k: "year", label: st.yearTol ? `Jahr ±${st.yearTol}` : "Jahr", pts: p.year });
+  if (st.singer && song && song.singer !== null && song.singer !== undefined) cats.push({ k: "singer", label: song.singer === "" ? "Instrumental" : "Sänger", pts: p.singer });
+  return cats;
+}
+const catPoints = (cats, marks) => cats.reduce((a, c) => a + (marks[c.k] ? c.pts : 0), 0);
+
 /* ================= Ansichten ================= */
 function renderGame() {
   const g = store.game;
@@ -63,7 +74,7 @@ function renderSetup() {
     <header class="hero">
       <p class="eyebrow">Tango-Quiz</p>
       <h1>Orquesta</h1>
-      <p class="muted">Song läuft – wer erkennt Orchester und Titel?</p>
+      <p class="muted">Song läuft – wer erkennt Orchester, Titel${s.year ? " und Jahr" : ""}?</p>
     </header>
     ${spotifyCard()}
     <h2>Spieler</h2>
@@ -91,6 +102,8 @@ function renderSetup() {
       <span>Orchester</span>
       <span class="muted">${s.orchestras.length ? `${s.orchestras.length} ausgewählt` : "alle"} ›</span>
     </button>
+
+    ${pastGamesHtml()}
 
     <div class="sticky-cta">
       <button class="btn primary big" data-act="startGame" ${n && store.players.length ? "" : "disabled"}>Spiel starten</button>
@@ -135,10 +148,9 @@ function renderTurn() {
       </div>
       <div class="sticky-cta"><button class="btn primary big" data-act="reveal">Aufdecken</button></div>`;
   } else {
-    const pts = store.settings.points;
-    const showSinger = store.settings.singer && song.singer !== null && song.singer !== undefined;
-    const sum = (c.marks.orq ? pts.orq : 0) + (c.marks.title ? pts.title : 0) + (showSinger && c.marks.singer ? pts.singer : 0);
-    const meta = [song.year, song.singer === "" ? "instrumental" : song.singer, GENRES[song.genre]].filter(Boolean).map(esc).join(" · ");
+    const cats = guessCats(song);
+    const sum = catPoints(cats, c.marks);
+    const meta = [song.singer === "" ? "instrumental" : song.singer, GENRES[song.genre]].filter(Boolean).map(esc).join(" · ");
     body = `
       <section class="reveal">
         ${song.spotify && song.spotify.image ? `<img class="cover" src="${esc(song.spotify.image)}" alt="" width="64" height="64">` : ""}
@@ -146,14 +158,13 @@ function renderTurn() {
         <h2 class="orq">${esc(song.orq)}</h2>
         <p class="eyebrow">Titel</p>
         <p class="title">${esc(song.title)}</p>
+        ${song.year ? `<p class="eyebrow">Jahr</p><p class="year">${esc(song.year)}</p>` : ""}
         <p class="muted meta">${meta}</p>
         ${song.status === "auto" && song.spotify ? `<p class="muted small">Gespielt: ${esc(song.spotify.name)} – ${esc(song.spotify.artists)} <button class="link" data-act="editSong" data-id="${esc(song.id)}">stimmt nicht?</button></p>` : ""}
       </section>
       <p class="muted center">Was hat <b>${esc(p.name)}</b> erkannt?</p>
       <div class="marks">
-        <button class="mark" aria-pressed="${!!c.marks.orq}" data-act="mark" data-k="orq"><span>Orchester</span><b>+${pts.orq}</b></button>
-        <button class="mark" aria-pressed="${!!c.marks.title}" data-act="mark" data-k="title"><span>Titel</span><b>+${pts.title}</b></button>
-        ${showSinger ? `<button class="mark" aria-pressed="${!!c.marks.singer}" data-act="mark" data-k="singer"><span>${song.singer === "" ? "Instrumental" : "Sänger"}</span><b>+${pts.singer}</b></button>` : ""}
+        ${cats.map((x) => `<button class="mark" aria-pressed="${!!c.marks[x.k]}" data-act="mark" data-k="${x.k}"><span>${esc(x.label)}</span><b>+${x.pts}</b></button>`).join("")}
       </div>
       <div class="sticky-cta"><button class="btn primary big" data-act="next">${sum ? `+${sum} für ${esc(p.name)} · weiter` : "Weiter"}</button></div>`;
   }
@@ -171,23 +182,14 @@ function renderTurn() {
 
 function renderResult() {
   const g = store.game;
-  const ranked = g.players.map((p, i) => ({ ...p, i })).sort((a, b) => b.score - a.score);
-  const stat = (i, k) => g.history.filter((h) => h.player === i && h.marks[k]).length;
-  const turns = (i) => g.history.filter((h) => h.player === i).length;
+  const rec = finishedRecord(g);
   $("#view").innerHTML = `
     <header class="hero">
       <p class="eyebrow">Ergebnis</p>
-      <h1>${ranked.length && (ranked.length === 1 || ranked[0].score > ranked[1].score) ? esc(ranked[0].name) : "Unentschieden"}</h1>
-      <p class="muted">${g.history.length} Songs gespielt</p>
+      <h1>${esc(winnerText(rec))}</h1>
+      <p class="muted">${rec.turns.length} Songs gespielt · Tippe auf einen Namen für die Details</p>
     </header>
-    <section class="card list">
-      ${ranked.map((p, r) => `<div class="row rank">
-        <span class="place">${r + 1}</span>
-        <span class="dot" style="--c:var(--p${(p.i % 6) + 1})"></span>
-        <span class="grow"><b>${esc(p.name)}</b><br><span class="muted small">Orchester ${stat(p.i, "orq")}/${turns(p.i)} · Titel ${stat(p.i, "title")}/${turns(p.i)}</span></span>
-        <span class="big-pts">${p.score}</span>
-      </div>`).join("")}
-    </section>
+    ${gameDetailHtml(rec)}
     <div class="sticky-cta">
       <button class="btn primary big" data-act="again">Nochmal mit denselben Spielern</button>
       <button class="btn ghost" data-act="newGame">Neues Spiel einrichten</button>
@@ -253,7 +255,7 @@ actions.newGame = () => { store.game = null; save(); render(); };
 actions.endGame = () => {
   if (!confirm("Spiel jetzt beenden und Ergebnis zeigen?")) return;
   spotifyPause().catch(() => {});
-  store.game.finished = true; save(); render();
+  finishGame(store.game); save(); render();
 };
 
 async function withBusy(fn) {
@@ -326,14 +328,14 @@ actions.mark = (el) => { const m = store.game.current.marks; m[el.dataset.k] = !
 actions.next = () => {
   const g = store.game, c = g.current, s = store.settings;
   const song = songById(c.songId);
-  const singerOn = s.singer && song && song.singer !== null && song.singer !== undefined;
-  const pts = (c.marks.orq ? s.points.orq : 0) + (c.marks.title ? s.points.title : 0) + (singerOn && c.marks.singer ? s.points.singer : 0);
+  const cats = guessCats(song, s);
+  const pts = catPoints(cats, c.marks);
   g.players[g.turn].score += pts;
-  g.history.push({ player: g.turn, songId: c.songId, marks: { ...c.marks }, pts });
+  g.history.push({ player: g.turn, songId: c.songId, song: songSnapshot(song), cats, marks: { ...c.marks }, pts });
   spotifyPause().catch(() => {});
   g.turn++;
   if (g.turn >= g.players.length) { g.turn = 0; g.round++; }
-  if (g.rounds && g.round > g.rounds) { g.finished = true; save(); render(); return; }
+  if (g.rounds && g.round > g.rounds) { finishGame(g); save(); render(); return; }
   const n = nextSong(g);
   g.current = n ? { songId: n.id, phase: "ready", marks: {}, pos: null } : null;
   save(); render(); window.scrollTo(0, 0);
