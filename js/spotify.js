@@ -137,7 +137,10 @@ function spotifyMessage(status, reason, msg, retry) {
   if (reason === "NO_ACTIVE_DEVICE" || (status === 404 && /device/i.test(msg || ""))) return "Kein aktives Spotify-Gerät gefunden.";
   if (reason === "PREMIUM_REQUIRED") return "Für die Wiedergabe ist Spotify Premium nötig.";
   if (status === 403 && /not registered|developer dashboard/i.test(msg || "")) return "Dieses Spotify-Konto ist im Spotify-Dashboard nicht unter „User Management“ eingetragen.";
-  if (reason === "QUOTA_EXCEEDED") return "Spotify-Kontingent für heute aufgebraucht – später nochmal versuchen.";
+  if (reason === "QUOTA_EXCEEDED") {
+    const h = retry ? Math.ceil(+retry / 3600) : 0;
+    return `Spotify-Kontingent aufgebraucht – Spotify sperrt die App ${h ? `für ca. ${h} Std.` : "vorübergehend"}. Danach geht es wieder.`;
+  }
   if (status === 429) return `Zu viele Anfragen an Spotify – bitte ${retry ? `${retry} s` : "kurz"} warten.`;
   return msg || `Spotify-Fehler ${status}`;
 }
@@ -165,21 +168,32 @@ async function pickDevice() {
   return d || null;
 }
 
+let repeatSetFor = "";   // Wiederholen nur einmal pro Gerät setzen (spart Anfragen)
 async function spotifyPlay(uri, positionMs = 0) {
-  const d = await pickDevice();
-  if (!d) throw new SpotifyError(404, "NO_ACTIVE_DEVICE", "Kein aktives Spotify-Gerät gefunden.");
   const body = { uris: [uri], position_ms: Math.max(0, Math.round(positionMs)) };
-  try {
-    await api("/me/player/play", { method: "PUT", query: { device_id: d.id }, body });
-  } catch (e) {
-    if (e.status !== 404) throw e;
-    // Gerät schläft: Wiedergabe erst dorthin übertragen, dann erneut starten
-    await api("/me/player", { method: "PUT", body: { device_ids: [d.id], play: false } });
-    await sleep(600);
-    await api("/me/player/play", { method: "PUT", query: { device_id: d.id }, body });
+  // Erst das gemerkte Gerät direkt probieren – Geräteliste nur abfragen, wenn das nicht klappt
+  let d = store.settings.deviceId ? { id: store.settings.deviceId, name: store.settings.deviceName } : null;
+  let done = false;
+  if (d) {
+    try { await api("/me/player/play", { method: "PUT", query: { device_id: d.id }, body }); done = true; }
+    catch (e) { if (e.status !== 404) throw e; }
   }
-  if (store.settings.repeat) {
-    setTimeout(() => api("/me/player/repeat", { method: "PUT", query: { state: "track", device_id: d.id } }).catch(() => {}), 500);
+  if (!done) {
+    d = await pickDevice();
+    if (!d) throw new SpotifyError(404, "NO_ACTIVE_DEVICE", "Kein aktives Spotify-Gerät gefunden.");
+    try {
+      await api("/me/player/play", { method: "PUT", query: { device_id: d.id }, body });
+    } catch (e) {
+      if (e.status !== 404) throw e;
+      // Gerät schläft: Wiedergabe erst dorthin übertragen, dann erneut starten
+      await api("/me/player", { method: "PUT", body: { device_ids: [d.id], play: false } });
+      await sleep(600);
+      await api("/me/player/play", { method: "PUT", query: { device_id: d.id }, body });
+    }
+  }
+  if (store.settings.repeat && repeatSetFor !== d.id) {
+    repeatSetFor = d.id;
+    setTimeout(() => api("/me/player/repeat", { method: "PUT", query: { state: "track", device_id: d.id } }).catch(() => { repeatSetFor = ""; }), 500);
   }
   return d;
 }
@@ -187,23 +201,22 @@ async function spotifyPlay(uri, positionMs = 0) {
 // Nach dem Startbefehl nachsehen, ob Spotify wirklich diesen Song spielt
 async function spotifyCheck(uri) {
   let kicked = 0;
-  for (let i = 0; i < 4; i++) {
-    await sleep(1200);
+  for (let i = 0; i < 2; i++) {
+    await sleep(i ? 1500 : 1800);
     let st = null;
     try { st = await api("/me/player", { query: { market: "from_token" } }); } catch (e) { return { ok: false, why: e.message }; }
     if (st && st.is_playing && st.item && st.item.uri === uri) return { ok: true };
     if (st && st.item && st.item.uri === uri && st.item.is_playable === false) return { ok: false, unplayable: true, why: "Diese Aufnahme ist für dieses Spotify-Konto nicht abspielbar (Land/Lizenz)." };
     // Song geladen, aber pausiert (iOS lässt Spotify im Hintergrund oft nicht selbst starten): nachschieben
-    if (st && st.item && st.item.uri === uri && !st.is_playing && kicked < 2) {
+    if (st && st.item && st.item.uri === uri && !st.is_playing && kicked < 1) {
       kicked++;
       const dev = st.device && st.device.id;
       try {
-        if (kicked === 1) await api("/me/player/play", { method: "PUT", query: dev ? { device_id: dev } : {} });
-        else if (dev) await api("/me/player", { method: "PUT", body: { device_ids: [dev], play: true } });
+        await api("/me/player/play", { method: "PUT", query: dev ? { device_id: dev } : {} });
       } catch (e) { /* nächster Versuch */ }
       continue;
     }
-    if (i === 3) {
+    if (i === 1) {
       if (!st) return { ok: false, why: "Spotify meldet keine laufende Wiedergabe." };
       if (st.item && st.item.uri !== uri) return { ok: false, why: `Spotify spielt etwas anderes (${st.item.name}).` };
       if (!st.is_playing) return { ok: false, why: `Spotify hat den Song geladen, spielt aber nicht${st.device ? ` (Gerät: ${st.device.name})` : ""}.` };
@@ -277,7 +290,7 @@ async function findCandidates(song) {
     const items = await searchTracks(q);   // Fehler nicht verschlucken – sonst gilt der Song fälschlich als „nicht gefunden“
     for (const t of items) if (!seen.has(t.id)) seen.set(t.id, { t, s: scoreTrack(song, t) });
     const best = [...seen.values()].sort((a, b) => b.s.total - a.s.total)[0];
-    if (best && best.s.ok && best.s.total >= 85) break;   // eindeutig genug, zweite Suche sparen
+    if (best && best.s.ok) break;   // passt – zweite Suche sparen
   }
   return [...seen.values()].sort((a, b) => b.s.total - a.s.total);
 }

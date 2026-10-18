@@ -44,7 +44,7 @@ function renderArchive() {
     </div>
     ${nOpen && isLoggedIn() ? `<section class="card notice">
       ${matching ? `<p>Suche auf Spotify … ${matching.done} von ${matching.total}</p><div class="bar"><span style="width:${Math.round(matching.done / matching.total * 100)}%"></span></div>`
-        : `<p>${nOpen} Songs sind noch keinem Spotify-Track zugeordnet. Das passiert sonst automatisch beim ersten Abspielen.</p>
+        : `<p>${nOpen} Songs sind noch keinem Spotify-Track zugeordnet. Das passiert sonst automatisch beim ersten Abspielen. Alle auf einmal braucht viele Spotify-Anfragen – Spotify erlaubt pro Tag nur ein begrenztes Kontingent.</p>
            <button class="btn" data-act="matchAll">Jetzt alle zuordnen</button>`}
     </section>` : ""}
     <input class="search" type="search" placeholder="Suchen: Orchester, Titel, Sänger, Jahr" value="${esc(archiveQuery)}" data-input="archiveSearch" aria-label="Archiv durchsuchen">

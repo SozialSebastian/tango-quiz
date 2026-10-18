@@ -1,5 +1,5 @@
 // Offline-Cache für die App. Bei jeder Änderung an den Dateien VERSION erhöhen.
-const VERSION = "orquesta-v10";
+const VERSION = "orquesta-v11";
 const FILES = [
   "./",
   "./index.html",
