@@ -301,6 +301,11 @@ actions.play = () => withBusy(async () => {
   }
   await spotifyPlay(song.spotify.uri, cur.pos);
   cur.phase = "playing";
+  const chk = await spotifyCheck(song.spotify.uri);
+  if (!chk.ok) {
+    cur.phase = "ready";
+    toast(`${chk.why} Öffne kurz die Spotify-App und tippe hier nochmal auf die Platte.`, 6000);
+  }
 });
 actions.pause = () => withBusy(async () => { await spotifyPause(); store.game.current.phase = "paused"; });
 actions.restart = () => withBusy(async () => {

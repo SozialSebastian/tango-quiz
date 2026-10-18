@@ -21,6 +21,9 @@ function renderSettings() {
       <button class="code" data-act="copyRedirect">${esc(redirectUri())}</button>
     </section>
 
+    ${spLog.length ? `<details class="card splog"><summary class="row"><span class="grow">Spotify-Protokoll<br><span class="muted small">für die Fehlersuche – bei Problemen Bildschirmfoto schicken</span></span><span class="chev">›</span></summary>
+      <div class="pad small mono">${spLog.map((x) => `<div>${esc(x.t)} · ${esc(x.m)} ${esc(x.p)} → <b>${esc(x.s)}</b>${x.e ? ` · ${esc(x.e)}` : ""}</div>`).join("")}</div></details>` : ""}
+
     <h2>Wiedergabe</h2>
     <section class="card list">
       <div class="row"><span class="grow">Startpunkt</span>

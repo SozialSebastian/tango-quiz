@@ -103,6 +103,13 @@ async function accessToken() {
 }
 
 /* ================= Web API ================= */
+/* Protokoll der letzten Spotify-Anfragen (für die Fehlersuche, sichtbar in den Einstellungen) */
+const spLog = [];
+function logSp(entry) {
+  spLog.unshift({ t: new Date().toLocaleTimeString("de-DE"), ...entry });
+  if (spLog.length > 15) spLog.length = 15;
+}
+
 async function api(path, { method = "GET", query, body } = {}, retried = false) {
   const token = await accessToken();
   const u = new URL(SP_API + path);
@@ -112,6 +119,7 @@ async function api(path, { method = "GET", query, body } = {}, retried = false) 
     headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
     body: body ? JSON.stringify(body) : undefined
   });
+  if (!path.startsWith("/search")) logSp({ m: method, p: path, s: res.status });
   if (res.status === 401 && !retried) { auth.expires = 0; return api(path, { method, query, body }, true); }
   if (res.status === 204 || res.status === 202) return null;
   const text = await res.text();
@@ -119,6 +127,7 @@ async function api(path, { method = "GET", query, body } = {}, retried = false) 
   try { j = text ? JSON.parse(text) : null; } catch (e) { j = null; }
   if (!res.ok) {
     const er = (j && j.error) || {};
+    if (spLog[0] && spLog[0].p === path) spLog[0].e = [er.reason, er.message].filter(Boolean).join(" – ");
     throw new SpotifyError(res.status, er.reason || "", spotifyMessage(res.status, er.reason, er.message, res.headers.get("retry-after")));
   }
   return j;
@@ -173,6 +182,22 @@ async function spotifyPlay(uri, positionMs = 0) {
     setTimeout(() => api("/me/player/repeat", { method: "PUT", query: { state: "track", device_id: d.id } }).catch(() => {}), 500);
   }
   return d;
+}
+
+// Nach dem Startbefehl nachsehen, ob Spotify wirklich diesen Song spielt
+async function spotifyCheck(uri) {
+  for (let i = 0; i < 3; i++) {
+    await sleep(1200);
+    let st = null;
+    try { st = await api("/me/player"); } catch (e) { return { ok: false, why: e.message }; }
+    if (st && st.is_playing && st.item && st.item.uri === uri) return { ok: true };
+    if (i === 2) {
+      if (!st) return { ok: false, why: "Spotify meldet keine laufende Wiedergabe." };
+      if (st.item && st.item.uri !== uri) return { ok: false, why: `Spotify spielt etwas anderes (${st.item.name}).` };
+      if (!st.is_playing) return { ok: false, why: `Spotify hat den Song geladen, spielt aber nicht${st.device ? ` (Gerät: ${st.device.name})` : ""}.` };
+    }
+  }
+  return { ok: false, why: "Keine Bestätigung von Spotify." };
 }
 
 async function spotifyPause() {

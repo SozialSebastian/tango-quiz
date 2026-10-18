@@ -284,3 +284,6 @@ details[open] > summary .chev { transform: rotate(90deg); }
 .tickchip.no { color: var(--ink-2); }
 .who-small { font-size: 13px; font-weight: 700; color: var(--c); padding: 3px 0; margin-right: 2px; }
 details.all-turns { overflow: hidden; }
+
+.splog .pad { padding: 0 16px 14px; }
+.mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5; word-break: break-all; }

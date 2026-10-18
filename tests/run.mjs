@@ -40,6 +40,7 @@ async function open({ auth, settings, store, dark, noDevice, url = "" } = {}) {
   const page = await ctx.newPage();
   const errors = [];
   const calls = [];
+  let lastUri = null;
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
   page.on("dialog", (d) => d.accept());
@@ -55,6 +56,9 @@ async function open({ auth, settings, store, dark, noDevice, url = "" } = {}) {
     calls.push({ m, p, q: Object.fromEntries(u.searchParams), body: r.request().postData() });
     if (p === "/me") return json(r, { id: "seb", display_name: "Sebastian" });
     if (p === "/me/player/devices") return json(r, { devices: noDevice ? [] : [{ id: "dev1", name: "iPhone von Sebastian", type: "Smartphone", is_active: false }] });
+    if (p === "/me/player" && m === "GET") return json(r, { is_playing: !!lastUri, item: lastUri ? { uri: lastUri, name: "x" } : null, device: { name: "iPhone" } });
+    if (p === "/me/player/play" && r.request().postData()) lastUri = JSON.parse(r.request().postData()).uris[0];
+    if (p === "/me/player/pause") lastUri = null;
     if (p.startsWith("/me/player")) return r.fulfill({ status: 204, headers: { "access-control-allow-origin": "*" } });
     if (p === "/search") {
       const q = u.searchParams.get("q").toLowerCase();
