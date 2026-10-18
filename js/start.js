@@ -2,7 +2,8 @@
 "use strict";
 
 (async () => {
-  if (seedArchive()) save();
+  const seeded = seedArchive();
+  if (applyFixedTracks() || seeded) save();
   const back = await handleSpotifyCallback();
   render();
   if (back && isLoggedIn()) { spotifyMe().then(() => { if (tab === "settings") render(); }).catch(() => {}); pickDevice().then(() => render()).catch(() => {}); }

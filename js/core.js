@@ -102,6 +102,21 @@ function seedArchive(force = false) {
   return added;
 }
 
+/* Feste Zuordnungen (js/tracks.js) übernehmen. Eigene, bestätigte Zuordnungen bleiben unangetastet. */
+function applyFixedTracks() {
+  if (typeof TRACKS === "undefined" || (store.tracksVersion || 0) >= TRACKS_VERSION) return 0;
+  let n = 0;
+  for (const s of store.archive) {
+    const t = TRACKS[s.id];
+    if (!t || s.status === "ok") continue;
+    s.spotify = { uri: `spotify:track:${t.id}`, id: t.id, name: t.name || s.title, artists: t.artists || "", album: t.album || "", release: t.release || "", image: t.image || "", duration: t.duration || 0 };
+    s.status = "fixed";
+    n++;
+  }
+  store.tracksVersion = TRACKS_VERSION;
+  return n;
+}
+
 function orchestraNames() {
   const set = new Set(store.archive.map((s) => s.orq).filter(Boolean));
   return [...set].sort((a, b) => norm(a).localeCompare(norm(b)));

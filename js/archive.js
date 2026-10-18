@@ -8,6 +8,7 @@ let matching = null;         // { done, total } während „Alle zuordnen“
 const STATUS = {
   ok: { t: "bestätigt", c: "ok" },
   auto: { t: "automatisch zugeordnet", c: "auto" },
+  fixed: { t: "fest hinterlegt", c: "ok" },
   open: { t: "noch nicht gesucht", c: "open" },
   missing: { t: "nicht gefunden", c: "missing" }
 };

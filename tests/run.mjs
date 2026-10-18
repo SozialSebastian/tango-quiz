@@ -335,6 +335,32 @@ await test("Archiv-Update: ersetzte Einträge werden ausgetauscht, Spotify-Zuord
   await ctx.close();
 });
 
+await test("Feste Spotify-Zuordnungen werden übernommen, eigene bleiben", async () => {
+  const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("**/js/tracks.js", (r) => r.fulfill({ contentType: "text/javascript", body: 'const TRACKS_VERSION = 1; const TRACKS = { "osvaldo-pugliese-la-yumba-1946": { id: "yumba123", name: "La Yumba" }, "osvaldo-pugliese-negracha-1948": { id: "neg456" } };' }));
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem("seeded")) return;
+    sessionStorage.setItem("seeded", "1");
+    localStorage.clear();
+    localStorage.setItem("orquesta.v1", JSON.stringify({ seedVersion: 99, settings: { clientId: "x" }, archive: [
+      { id: "osvaldo-pugliese-la-yumba-1946", orq: "Osvaldo Pugliese", title: "La yumba", year: 1946, singer: "", genre: "tango", active: true, source: "archiv", spotify: null, status: "open" },
+      { id: "osvaldo-pugliese-negracha-1948", orq: "Osvaldo Pugliese", title: "Negracha", year: 1948, singer: "", genre: "tango", active: true, source: "archiv", spotify: { uri: "spotify:track:mine", id: "mine" }, status: "ok" }
+    ] }));
+  });
+  await page.goto(BASE);
+  await page.waitForTimeout(300);
+  const s = await store(page);
+  const y = s.archive.find((x) => x.title === "La yumba");
+  assert.equal(y.status, "fixed");
+  assert.equal(y.spotify.uri, "spotify:track:yumba123");
+  assert.equal(s.archive.find((x) => x.title === "Negracha").spotify.id, "mine", "eigene Bestätigung bleibt");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await test("Dunkler Modus: Bildschirmfotos ohne Fehler", async () => {
   const { page, ctx, errors } = await open({ auth: LOGGED, dark: true, settings: { singer: true } });
   await shot(page, "1-start-dunkel");
