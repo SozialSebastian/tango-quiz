@@ -312,7 +312,7 @@ actions.play = () => withBusy(async () => {
     // andere Aufnahme suchen und gleich nochmal
     song.spotify = null; song.status = "open"; save();
     toast(`${chk.why} Suche eine andere Aufnahme …`, 4000);
-    cur.pos = null;
+    cur.pos = null; cur.phase = "ready";
     return;
   }
   if (!chk.ok) {
