@@ -143,7 +143,8 @@ function renderTurn() {
         ${c && c.stuck && phase !== "playing" ? `<div class="card notice stuck">
           <p><b>Spotify startet nicht von selbst.</b> iOS erlaubt das auf diesem Handy gerade nicht.</p>
           <p class="small">Notlösung: <b>Handy umdrehen</b> (Titel steht in Spotify), dann „In Spotify starten“, dort auf ▶ tippen und zurück zu Orquesta wechseln.</p>
-          <a class="btn primary" href="spotify:" data-act="openSpotifyStuck">In Spotify starten</a>
+          <a class="btn primary" href="${esc(song.spotify && song.spotify.id ? `spotify:track:${song.spotify.id}` : "spotify:")}" data-act="openSpotifyStuck">In Spotify starten</a>
+          <p class="muted small">Ist der Song in Spotify ausgegraut, ist diese Aufnahme für das Konto nicht verfügbar – dann hier „Anderer Song“.</p>
         </div>` : ""}
         <p class="stage-hint">${busy ? "Einen Moment …" : playing ? "Läuft – hör genau hin" : phase === "paused" ? "Pausiert" : "Tippen zum Abspielen"}</p>
         <div class="mini-actions">
@@ -307,6 +308,13 @@ actions.play = () => withBusy(async () => {
   await spotifyPlay(song.spotify.uri, cur.pos);
   cur.phase = "playing";
   const chk = await spotifyCheck(song.spotify.uri);
+  if (!chk.ok && chk.unplayable) {
+    // andere Aufnahme suchen und gleich nochmal
+    song.spotify = null; song.status = "open"; save();
+    toast(`${chk.why} Suche eine andere Aufnahme …`, 4000);
+    cur.pos = null;
+    return;
+  }
   if (!chk.ok) {
     cur.phase = "ready";
     cur.stuck = true;   // Notlösung anbieten

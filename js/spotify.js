@@ -190,8 +190,9 @@ async function spotifyCheck(uri) {
   for (let i = 0; i < 4; i++) {
     await sleep(1200);
     let st = null;
-    try { st = await api("/me/player"); } catch (e) { return { ok: false, why: e.message }; }
+    try { st = await api("/me/player", { query: { market: "from_token" } }); } catch (e) { return { ok: false, why: e.message }; }
     if (st && st.is_playing && st.item && st.item.uri === uri) return { ok: true };
+    if (st && st.item && st.item.uri === uri && st.item.is_playable === false) return { ok: false, unplayable: true, why: "Diese Aufnahme ist für dieses Spotify-Konto nicht abspielbar (Land/Lizenz)." };
     // Song geladen, aber pausiert (iOS lässt Spotify im Hintergrund oft nicht selbst starten): nachschieben
     if (st && st.item && st.item.uri === uri && !st.is_playing && kicked < 2) {
       kicked++;
