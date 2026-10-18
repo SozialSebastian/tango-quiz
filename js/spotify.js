@@ -263,6 +263,7 @@ function scoreTrack(song, t) {
     if (t.album && String(t.album.release_date || "").startsWith(String(song.year))) bonus += 4;
   }
   if (/\b(en vivo|live|remix|karaoke|cover|ensayo|en concierto|electro|lounge)\b/.test(full)) bonus -= 25;
+  if (/\bla juan darienzo\b/.test(artists)) bonus -= 60;   // heutige Tribute-Band, nicht das Originalorchester
   return { total: title + artist + bonus, ok: title >= 20 && artist >= 35 };
 }
 

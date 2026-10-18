@@ -44,6 +44,8 @@ async function open({ auth, settings, store, dark, noDevice, url = "" } = {}) {
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
   page.on("dialog", (d) => d.accept());
+  // feste Zuordnungen im Test aus – die Suche wird nachgebildet geprüft
+  await page.route("**/js/tracks.js", (r) => r.fulfill({ contentType: "text/javascript", body: "const TRACKS_VERSION = 0; const TRACKS = {};" }));
   await page.route("https://accounts.spotify.com/api/token", async (r) => {
     calls.push({ m: "POST", p: "token", body: r.request().postData() });
     json(r, { access_token: "tok2", refresh_token: "ref2", expires_in: 3600 });

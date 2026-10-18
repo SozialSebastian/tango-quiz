@@ -5,13 +5,15 @@
    eigene Änderungen im Archiv bleiben erhalten. */
 "use strict";
 
-const ARCHIVE_VERSION = 4;
+const ARCHIVE_VERSION = 5;
 
 // Einträge früherer Archiv-Stände, die durch korrigierte ersetzt wurden (alte ID → neue Zeile mit Jahr)
 const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma",
   // Stand 4: Jahre ergänzt bzw. korrigiert
   "carlos-di-sarli-griseta", "carlos-di-sarli-alma-mia", "carlos-di-sarli-pena-mulata", "carlos-di-sarli-la-capilla-blanca",
-  "carlos-di-sarli-nada", "carlos-di-sarli-porteno-y-bailarin", "carlos-di-sarli-patotero-sentimental", "anibal-troilo-c-t-v-1941"];
+  "carlos-di-sarli-nada", "carlos-di-sarli-porteno-y-bailarin", "carlos-di-sarli-patotero-sentimental", "anibal-troilo-c-t-v-1941",
+  // Stand 5: Jahr bzw. Sänger korrigiert
+  "carlos-di-sarli-champagne-tango-1944", "lucio-demare-malena-1942", "lucio-demare-sorbos-amargos-1942"];
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo
@@ -58,7 +60,7 @@ const ARCHIVE_DEFAULT = [
   ["Carlos Di Sarli", "El pollo Ricardo", 1940, "", "tango"],
   ["Carlos Di Sarli", "Junto a tu corazón", 1942, "Alberto Podestá", "tango"],
   ["Carlos Di Sarli", "Verdemar", 1943, "Roberto Rufino", "tango"],
-  ["Carlos Di Sarli", "Champagne tango", 1944, "", "tango"],
+  ["Carlos Di Sarli", "Champagne tango", 1958, "", "tango"],
   ["Carlos Di Sarli", "Tú... el cielo y tú", 1944, "Alberto Podestá", "tango"],
   ["Carlos Di Sarli", "Tinta verde", 1945, "", "tango"],
   ["Carlos Di Sarli", "A la gran muñeca", 1954, "", "tango"],
@@ -122,8 +124,8 @@ const ARCHIVE_DEFAULT = [
   ["Pedro Laurenz", "No me extraña", 1940, "Juan Carlos Casas", "tango"],
 
   // Lucio Demare
-  ["Lucio Demare", "Malena", 1942, "Raúl Berón", "tango"],
-  ["Lucio Demare", "Sorbos amargos", 1942, "Raúl Berón", "tango"],
+  ["Lucio Demare", "Malena", 1942, "Juan Carlos Miranda", "tango"],
+  ["Lucio Demare", "Sorbos amargos", 1942, "Juan Carlos Miranda", "tango"],
   ["Lucio Demare", "Mañana zarpa un barco", 1942, "Juan Carlos Miranda", "tango"],
 
   // Ángel D'Agostino

@@ -107,6 +107,8 @@ function applyFixedTracks() {
   if (typeof TRACKS === "undefined" || (store.tracksVersion || 0) >= TRACKS_VERSION) return 0;
   let n = 0;
   for (const s of store.archive) {
+    // automatisch gefundene Aufnahmen der heutigen Tribute-Band „La Juan D'Arienzo“ verwerfen
+    if (s.status === "auto" && s.spotify && /^la juan d.?arienzo/i.test(s.spotify.artists || "")) { s.spotify = null; s.status = "open"; }
     const t = TRACKS[s.id];
     if (!t || s.status === "ok") continue;
     s.spotify = { uri: `spotify:track:${t.id}`, id: t.id, name: t.name || s.title, artists: t.artists || "", album: t.album || "", release: t.release || "", image: t.image || "", duration: t.duration || 0 };
