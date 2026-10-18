@@ -199,16 +199,18 @@ async function spotifyPlay(uri, positionMs = 0) {
 }
 
 // Nach dem Startbefehl nachsehen, ob Spotify wirklich diesen Song spielt
+// gleicher Song? Spotify ersetzt Aufnahmen je nach Land manchmal durch eine gleichwertige („linked_from“)
+const sameTrack = (item, uri) => !!item && (item.uri === uri || (item.linked_from && item.linked_from.uri === uri));
 async function spotifyCheck(uri) {
   let kicked = 0;
   for (let i = 0; i < 2; i++) {
     await sleep(i ? 1500 : 1800);
     let st = null;
     try { st = await api("/me/player", { query: { market: "from_token" } }); } catch (e) { return { ok: false, why: e.message }; }
-    if (st && st.is_playing && st.item && st.item.uri === uri) return { ok: true };
-    if (st && st.item && st.item.uri === uri && st.item.is_playable === false) return { ok: false, unplayable: true, why: "Diese Aufnahme ist für dieses Spotify-Konto nicht abspielbar (Land/Lizenz)." };
+    if (st && st.is_playing && sameTrack(st.item, uri)) return { ok: true };
+    if (st && sameTrack(st.item, uri) && st.item.is_playable === false) return { ok: false, unplayable: true, why: "Diese Aufnahme ist für dieses Spotify-Konto nicht abspielbar (Land/Lizenz)." };
     // Song geladen, aber pausiert (iOS lässt Spotify im Hintergrund oft nicht selbst starten): nachschieben
-    if (st && st.item && st.item.uri === uri && !st.is_playing && kicked < 1) {
+    if (st && sameTrack(st.item, uri) && !st.is_playing && kicked < 1) {
       kicked++;
       const dev = st.device && st.device.id;
       try {
@@ -218,7 +220,7 @@ async function spotifyCheck(uri) {
     }
     if (i === 1) {
       if (!st) return { ok: false, why: "Spotify meldet keine laufende Wiedergabe." };
-      if (st.item && st.item.uri !== uri) return { ok: false, why: `Spotify spielt etwas anderes (${st.item.name}).` };
+      if (st.item && !sameTrack(st.item, uri)) return { ok: false, why: `Spotify spielt etwas anderes (${st.item.name}).` };
       if (!st.is_playing) return { ok: false, why: `Spotify hat den Song geladen, spielt aber nicht${st.device ? ` (Gerät: ${st.device.name})` : ""}.` };
     }
   }

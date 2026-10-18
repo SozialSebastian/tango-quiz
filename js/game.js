@@ -141,7 +141,7 @@ function renderTurn() {
           </span>
         </button>
         ${c && c.stuck && phase !== "playing" ? `<div class="card notice stuck">
-          <p><b>Spotify startet nicht von selbst.</b> iOS erlaubt das auf diesem Handy gerade nicht.</p>
+          <p><b>Spotify startet nicht von selbst.</b> Auf dem iPhone klappt das nur, solange in Spotify gerade etwas <b>läuft</b>. Starte in Spotify irgendeinen Song, komm zurück und tippe nochmal auf die Platte.</p>
           <p class="small">Notlösung: <b>Handy umdrehen</b> (Titel steht in Spotify), dann „In Spotify starten“, dort auf ▶ tippen und zurück zu Orquesta wechseln.</p>
           <a class="btn primary" href="${esc(song.spotify && song.spotify.id ? `spotify:track:${song.spotify.id}` : "spotify:")}" data-act="openSpotifyStuck">In Spotify starten</a>
           <p class="muted small">Ist der Song in Spotify ausgegraut, ist diese Aufnahme für das Konto nicht verfügbar – dann hier „Anderer Song“.</p>
@@ -341,7 +341,7 @@ actions.skip = () => withBusy(async () => {
   if (wasPlaying && n) {
     const song = await ensureTrack(g);
     if (song) { g.current.pos = 0; await spotifyPlay(song.spotify.uri, 0); g.current.phase = "playing"; }
-  } else if (wasPlaying) await spotifyPause();
+  }
 });
 actions.reveal = () => {
   const c = store.game.current;
@@ -357,10 +357,11 @@ actions.next = () => {
   const pts = catPoints(cats, c.marks);
   g.players[g.turn].score += pts;
   g.history.push({ player: g.turn, songId: c.songId, song: songSnapshot(song), cats, marks: { ...c.marks }, pts });
-  spotifyPause().catch(() => {});
+  // Nicht pausieren: Auf dem iPhone legt iOS ein pausiertes Spotify schlafen, dann startet der nächste Song nicht.
+  // Der aufgedeckte Song läuft weiter, bis der nächste Spieler auf die Platte tippt.
   g.turn++;
   if (g.turn >= g.players.length) { g.turn = 0; g.round++; }
-  if (g.rounds && g.round > g.rounds) { finishGame(g); save(); render(); return; }
+  if (g.rounds && g.round > g.rounds) { spotifyPause().catch(() => {}); finishGame(g); save(); render(); return; }
   const n = nextSong(g);
   g.current = n ? { songId: n.id, phase: "ready", marks: {}, pos: null } : null;
   save(); render(); window.scrollTo(0, 0);

@@ -187,7 +187,7 @@ await test("Spielrunde: abspielen, aufdecken, Punkte, nächster Spieler", async 
   assert.equal(s.game.players[0].score, 2);
   assert.equal(s.game.history.length, 1);
   assert.notEqual(s.game.current.songId, s.game.history[0].songId);
-  assert.ok(calls.some((c) => c.p === "/me/player/pause"), "Musik pausiert beim Weiter");
+  assert.ok(!calls.some((c) => c.p === "/me/player/pause"), "beim Weiter nicht pausieren (iOS)");
   assert.deepEqual(errors, []);
   await ctx.close();
 });
