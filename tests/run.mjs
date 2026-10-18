@@ -230,7 +230,7 @@ await test("Kein Spotify-Gerät: Hilfe mit Geräteauswahl erscheint", async () =
   const { page, ctx, errors } = await open({ auth: LOGGED, noDevice: true });
   await page.getByRole("button", { name: "Spiel starten" }).click();
   await page.getByRole("button", { name: "Abspielen" }).click();
-  await page.getByText("Spotify ist gerade nicht bereit.").waitFor();
+  await page.getByText("Spotify meldet gerade kein Gerät.").waitFor();
   await page.getByText("Spotify öffnen").waitFor();
   assert.deepEqual(errors, []);
   await ctx.close();

@@ -353,13 +353,15 @@ async function showDevices(noneActive = false) {
     <p class="muted">Suche Geräte …</p>`);
   let list = [];
   let err = "";
+  let who = null;
   try { list = await spotifyDevices(); } catch (e) { err = e.message; }
+  try { who = await spotifyMe(); } catch (e) { /* nur Anzeige */ }
   const d = $("#sheet");
   if (!d.open) return;
   const cur = store.settings.deviceId;
   d.innerHTML = `<div class="sheet-inner">
     <div class="sheet-head"><h3>Wiedergabegerät</h3><button class="btn ghost small" data-act="closeSheet">Fertig</button></div>
-    ${noneActive && !list.length ? `<p><b>Spotify ist gerade nicht bereit.</b></p>` : ""}
+    ${!list.length && !err ? `<p><b>Spotify meldet gerade kein Gerät.</b></p>` : ""}
     ${err ? `<p class="danger">${esc(err)}</p>` : ""}
     ${list.length ? `<div class="card list">${list.map((x) => `
       <button class="row device ${x.id === cur ? "on" : ""}" data-act="pickDevice" data-id="${esc(x.id)}" data-name="${esc(x.name)}">
@@ -368,7 +370,9 @@ async function showDevices(noneActive = false) {
         ${x.id === cur ? `<span class="tick" aria-label="gewählt">✓</span>` : ""}
       </button>`).join("")}</div>` : ""}
     <div class="help">
-      <p><b>Gerät fehlt?</b> Öffne die Spotify-App, starte kurz irgendeinen Song, pausiere ihn und komm hierher zurück. Das iPhone erscheint dann als Gerät.</p>
+      <p><b>Gerät fehlt?</b> Öffne die Spotify-App, starte irgendeinen Song und <b>lass ihn laufen</b>. Komm dann hierher zurück – die Liste aktualisiert sich von selbst. Sobald du im Spiel auf die Platte tippst, wird der laufende Song ersetzt.</p>
+      ${who ? `<p class="small">Angemeldet als <b>${esc(who.display_name || who.id)}</b>. Die Spotify-App auf diesem Handy muss mit <b>demselben Konto</b> angemeldet sein.</p>` : ""}
+      <p class="muted small">Bluetooth-Boxen erscheinen hier nicht – das ist richtig so: Die App steuert Spotify auf dem iPhone, der Ton geht von dort zur Box.</p>
       <p class="muted small">Tipp: Spotify zeigt den laufenden Song auf dem Sperrbildschirm – dort also nicht hinschauen.</p>
     </div>
     <div class="row-btns">
@@ -378,6 +382,12 @@ async function showDevices(noneActive = false) {
   </div>`;
 }
 actions.devices = () => showDevices(false);
+// Zurück aus der Spotify-App: Geräteliste automatisch neu laden
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const d = $("#sheet");
+  if (d.open && d.querySelector('[data-act="refreshDevices"]')) setTimeout(() => showDevices(false), 700);
+});
 actions.refreshDevices = () => showDevices(false);
 actions.pickDevice = (el) => {
   store.settings.deviceId = el.dataset.id; store.settings.deviceName = el.dataset.name; save();
