@@ -287,3 +287,6 @@ details.all-turns { overflow: hidden; }
 
 .splog .pad { padding: 0 16px 14px; }
 .mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5; word-break: break-all; }
+
+.stuck { text-align: left; width: 100%; }
+.stuck p { font-size: 15px; }

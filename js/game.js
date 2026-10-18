@@ -140,6 +140,11 @@ function renderTurn() {
             ${playing ? `<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>` : `<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>`}
           </span>
         </button>
+        ${c && c.stuck && phase !== "playing" ? `<div class="card notice stuck">
+          <p><b>Spotify startet nicht von selbst.</b> iOS erlaubt das auf diesem Handy gerade nicht.</p>
+          <p class="small">Notlösung: <b>Handy umdrehen</b> (Titel steht in Spotify), dann „In Spotify starten“, dort auf ▶ tippen und zurück zu Orquesta wechseln.</p>
+          <a class="btn primary" href="spotify:" data-act="openSpotifyStuck">In Spotify starten</a>
+        </div>` : ""}
         <p class="stage-hint">${busy ? "Einen Moment …" : playing ? "Läuft – hör genau hin" : phase === "paused" ? "Pausiert" : "Tippen zum Abspielen"}</p>
         <div class="mini-actions">
           <button class="btn ghost small" data-act="restart" ${phase === "ready" ? "disabled" : ""}>Von vorn</button>
@@ -304,9 +309,16 @@ actions.play = () => withBusy(async () => {
   const chk = await spotifyCheck(song.spotify.uri);
   if (!chk.ok) {
     cur.phase = "ready";
-    toast(`${chk.why} Öffne kurz die Spotify-App und tippe hier nochmal auf die Platte.`, 6000);
+    cur.stuck = true;   // Notlösung anbieten
+    toast(chk.why, 5000);
   }
 });
+actions.openSpotifyStuck = (el) => {
+  const c = store.game && store.game.current;
+  if (c) { c.stuck = false; c.phase = "playing"; save(); }
+  location.href = el.getAttribute("href");
+  setTimeout(() => renderTurn(), 800);
+};
 actions.pause = () => withBusy(async () => { await spotifyPause(); store.game.current.phase = "paused"; });
 actions.restart = () => withBusy(async () => {
   const song = songById(store.game.current.songId);

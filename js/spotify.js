@@ -186,12 +186,23 @@ async function spotifyPlay(uri, positionMs = 0) {
 
 // Nach dem Startbefehl nachsehen, ob Spotify wirklich diesen Song spielt
 async function spotifyCheck(uri) {
-  for (let i = 0; i < 3; i++) {
+  let kicked = 0;
+  for (let i = 0; i < 4; i++) {
     await sleep(1200);
     let st = null;
     try { st = await api("/me/player"); } catch (e) { return { ok: false, why: e.message }; }
     if (st && st.is_playing && st.item && st.item.uri === uri) return { ok: true };
-    if (i === 2) {
+    // Song geladen, aber pausiert (iOS lässt Spotify im Hintergrund oft nicht selbst starten): nachschieben
+    if (st && st.item && st.item.uri === uri && !st.is_playing && kicked < 2) {
+      kicked++;
+      const dev = st.device && st.device.id;
+      try {
+        if (kicked === 1) await api("/me/player/play", { method: "PUT", query: dev ? { device_id: dev } : {} });
+        else if (dev) await api("/me/player", { method: "PUT", body: { device_ids: [dev], play: true } });
+      } catch (e) { /* nächster Versuch */ }
+      continue;
+    }
+    if (i === 3) {
       if (!st) return { ok: false, why: "Spotify meldet keine laufende Wiedergabe." };
       if (st.item && st.item.uri !== uri) return { ok: false, why: `Spotify spielt etwas anderes (${st.item.name}).` };
       if (!st.is_playing) return { ok: false, why: `Spotify hat den Song geladen, spielt aber nicht${st.device ? ` (Gerät: ${st.device.name})` : ""}.` };
