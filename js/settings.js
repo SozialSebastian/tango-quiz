@@ -56,7 +56,6 @@ function renderSettings() {
       <button class="row" data-act="exportArchive"><span class="grow">Sicherung speichern<br><span class="muted small">Archiv und gespielte Spiele</span></span><span class="chev">›</span></button>
       <label class="row file-row"><span class="grow">Sicherung laden</span><span class="chev">›</span>
         <input type="file" accept="application/json,.json" data-change="importArchive" hidden></label>
-      <button class="row" data-act="reseed"><span class="grow">Fehlende Standard-Songs wiederherstellen</span><span class="chev">›</span></button>
     </section>
 
     <h2>So geht's</h2>
@@ -115,10 +114,4 @@ actions.importArchive = async (el) => {
     save(); toast(`${store.archive.length} Songs geladen.`); renderSettings();
   } catch (e) { toast(e.message || "Datei nicht lesbar."); }
   finally { el.value = ""; }
-};
-
-actions.reseed = () => {
-  const n = seedArchive(true);
-  store.tracksVersion = 0; applyFixedTracks();   // wiederhergestellte Songs bekommen ihre feste Spotify-Zuordnung
-  save(); toast(n ? `${n} Standard-Songs wiederhergestellt.` : "Alle Standard-Songs sind schon da.");
 };
