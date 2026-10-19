@@ -1,4 +1,4 @@
-/* Orquesta – Einstellungen, Sicherung */
+/* Orquesta – Einstellungen, Sicherung der gespielten Spiele */
 "use strict";
 
 function renderSettings() {
@@ -51,10 +51,10 @@ function renderSettings() {
       ${s.singer ? pointRow("singer", "Sänger") : ""}
     </section>
 
-    <h2>Archiv</h2>
+    <h2>Gespielte Spiele</h2>
     <section class="card list">
-      <button class="row" data-act="exportArchive"><span class="grow">Sicherung speichern<br><span class="muted small">Archiv und gespielte Spiele</span></span><span class="chev">›</span></button>
-      <label class="row file-row"><span class="grow">Sicherung laden</span><span class="chev">›</span>
+      <button class="row" data-act="exportArchive"><span class="grow">Sicherung speichern<br><span class="muted small">gespielte Spiele (und Spotify-Zuordnungen)</span></span><span class="chev">›</span></button>
+      <label class="row file-row"><span class="grow">Sicherung laden<br><span class="muted small">übernimmt die gespielten Spiele</span></span><span class="chev">›</span>
         <input type="file" accept="application/json,.json" data-change="importArchive" hidden></label>
     </section>
 
@@ -64,7 +64,7 @@ function renderSettings() {
       <p>Kommt kein Ton? Spotify-App öffnen, kurz irgendeinen Song starten und pausieren, zurück in die App.</p>
       <p class="muted small">Spotify zeigt den laufenden Song auf dem Sperrbildschirm und in der Dynamic Island – dort nicht hinschauen.</p>
     </section>
-    <p class="muted small center">Orquesta · Archiv-Stand ${ARCHIVE_VERSION}</p>`;
+    <p class="muted small center">Orquesta · ${store.archive.length} Songs im Archiv</p>`;
 }
 
 function pointRow(k, label) {
@@ -92,7 +92,7 @@ actions.pts = (el) => {
 };
 
 actions.exportArchive = () => {
-  const data = JSON.stringify({ app: "orquesta", version: 1, exported: new Date().toISOString(), archive: store.archive, removed: store.removed, games: store.games }, null, 1);
+  const data = JSON.stringify({ app: "orquesta", version: 1, exported: new Date().toISOString(), archive: store.archive, games: store.games }, null, 1);
   const blob = new Blob([data], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -106,12 +106,10 @@ actions.importArchive = async (el) => {
   if (!f) return;
   try {
     const j = JSON.parse(await f.text());
-    if (!j || !Array.isArray(j.archive)) throw new Error("Keine Orquesta-Sicherung.");
-    if (!confirm(`Archiv mit ${j.archive.length} Songs laden? Das aktuelle Archiv wird ersetzt.`)) return;
-    store.archive = j.archive.filter((s) => s && s.id && s.orq && s.title);
-    store.removed = Array.isArray(j.removed) ? j.removed : [];
-    if (Array.isArray(j.games)) store.games = j.games;
-    save(); toast(`${store.archive.length} Songs geladen.`); renderSettings();
+    if (!j || j.app !== "orquesta" || !Array.isArray(j.games)) throw new Error("Keine Orquesta-Sicherung.");
+    if (!confirm(`${j.games.length} gespielte Spiele laden? Die bisherigen Spiele auf diesem Gerät werden ersetzt.`)) return;
+    store.games = j.games;
+    save(); toast(`${store.games.length} Spiele geladen.`); renderSettings();
   } catch (e) { toast(e.message || "Datei nicht lesbar."); }
   finally { el.value = ""; }
 };

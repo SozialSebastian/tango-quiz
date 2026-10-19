@@ -119,7 +119,7 @@ await test("Erststart: Archiv angelegt, Verbinden angeboten", async () => {
   const s = await store(page);
   const n = await page.evaluate(() => ARCHIVE_DEFAULT.length);
   assert.equal(s.archive.length, n);
-  assert.ok(n >= 80, "mindestens 80 Standard-Songs");
+  assert.ok(n >= 250, "mindestens 250 Standard-Songs");
   const ids = new Set(s.archive.map((x) => x.id));
   assert.equal(ids.size, n, "IDs eindeutig");
   assert.ok(s.archive.every((x) => ["tango", "vals", "milonga"].includes(x.genre)));
@@ -242,64 +242,25 @@ await test("Kein Spotify-Gerät: Hilfe mit Geräteauswahl erscheint", async () =
   await ctx.close();
 });
 
-await test("Archiv: suchen, Song auf Spotify zuordnen, bearbeiten", async () => {
-  const { page, ctx, errors, calls } = await open({ auth: LOGGED });
+await test("Archiv nur lesen: Suche, Filter nach Schwierigkeit, Details ohne Bearbeitung", async () => {
+  const { page, ctx, errors } = await open({ auth: LOGGED });
   await page.locator(".tabbar [data-tab=archive]").click();
-  await page.getByText("Jetzt alle zuordnen").waitFor();
-  await shot(page, "5-archiv-hell");
+  await page.getByText("Songs ·").waitFor();
+  assert.equal(await page.getByText("+ Song").count(), 0, "kein Hinzufügen");
+  assert.equal(await page.getByText("Playlist importieren").count(), 0, "kein Import");
   await page.locator("input.search").fill("bahia");
   assert.equal(await page.locator(".row.song").count(), 1);
   await page.locator(".row.song").click();
-  await page.getByRole("button", { name: "Auf Spotify suchen" }).click();
-  await page.locator(".cand").first().waitFor();
-  assert.ok(calls.some((c) => c.p === "/search"));
-  // bester Treffer zuerst
-  assert.match(await page.locator(".cand").first().textContent(), /Remastered/);
-  await page.locator('.cand [data-act="pickCand"]').first().click();
-  const s = await store(page);
-  const song = s.archive.find((x) => x.title === "Bahía Blanca");
-  assert.equal(song.status, "ok");
-  assert.match(song.spotify.uri, /good/);
-  // bearbeiten
-  await page.locator(".row.song").click();
-  await page.locator('[name="year"]').fill("1958");
-  await page.getByRole("button", { name: "Sichern" }).click();
-  assert.equal((await store(page)).archive.find((x) => x.title === "Bahía Blanca").year, 1958);
-  assert.deepEqual(errors, []);
-  await ctx.close();
-});
-
-await test("Archiv: alle zuordnen", async () => {
-  const few = [["Juan D'Arienzo", "El flete", 1936, "", "tango"], ["Carlos Di Sarli", "Don Juan", 1955, "", "tango"]];
-  const { page, ctx, errors } = await open({ auth: LOGGED, store: { seedVersion: 99, archive: few.map(([orq, title, year, singer, genre], i) => ({ id: "x" + i, orq, title, year, singer, genre, active: true, source: "archiv", spotify: null, status: "open" })) } });
-  await page.locator(".tabbar [data-tab=archive]").click();
-  await page.getByText("Jetzt alle zuordnen").click();
-  await page.waitForFunction(() => !document.querySelector(".bar") && !/noch keinem/.test(document.body.textContent), null, { timeout: 8000 });
-  const s = await store(page);
-  assert.ok(s.archive.every((x) => x.status === "auto"), JSON.stringify(s.archive.map((x) => x.status)));
-  assert.deepEqual(errors, []);
-  await ctx.close();
-});
-
-await test("Playlist-Import: eigene Playlists, Doppelte überspringen, Angaben auslesen", async () => {
-  const { page, ctx, errors } = await open({ auth: LOGGED });
-  await page.locator(".tabbar [data-tab=archive]").click();
-  const before = (await store(page)).archive.length;
-  await page.getByRole("button", { name: "Playlist importieren" }).click();
-  await page.getByText("Tandas Sonntag").waitFor();
-  assert.equal(await page.getByText("Fremde", { exact: true }).count(), 0, "fremde Playlist nicht angeboten");
-  await page.getByText("Tandas Sonntag").click();
-  await page.getByRole("button", { name: "2 importieren" }).waitFor();  // Milonga sentimental + La yumba schon da
-  await shot(page, "6-import-hell");
-  await page.getByRole("button", { name: "2 importieren" }).click();
-  const s = await store(page);
-  assert.equal(s.archive.length, before + 2);
-  const pocas = s.archive.find((x) => x.title === "Mozo guapo");
-  assert.equal(pocas.orq, "Ricardo Tanturi");
-  assert.equal(pocas.singer, "Alberto Castillo");
-  const zorro = s.archive.find((x) => x.title === "Zorro gris");
-  assert.equal(zorro.year, 1942);
-  assert.equal(zorro.status, "ok");
+  await page.locator("#sheet").getByText("Schwierigkeit").waitFor();
+  assert.equal(await page.locator("#sheet input, #sheet select").count(), 0, "keine Eingabefelder");
+  assert.equal(await page.getByText("Song löschen").count(), 0);
+  await shot(page, "5b-archiv-details-hell");
+  await page.getByRole("button", { name: "Fertig" }).click();
+  await page.locator("input.search").fill("");
+  await page.locator('[data-act="archiveLevel"][data-l="leicht"]').click();
+  const n = await page.locator(".row.song").count();
+  assert.ok(n > 30 && n < 120, `leicht: ${n}`);
+  assert.equal(await page.locator(".row.song .lv-mittel, .row.song .lv-schwer").count(), 0);
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -317,74 +278,60 @@ await test("Einstellungen: Punkte, Sänger-Bonus, Sicherung", async () => {
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByText("Sicherung speichern").click()]);
   const data = JSON.parse(fs.readFileSync(await dl.path(), "utf8"));
   assert.equal(data.app, "orquesta");
-  assert.equal(data.archive.length, s.archive.length);
+  assert.ok(Array.isArray(data.games));
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await test("Archiv-Update: ersetzte Einträge werden ausgetauscht, Spotify-Zuordnung bleibt", async () => {
-  const old = { id: "rodolfo-biagi-paloma", orq: "Rodolfo Biagi", title: "Paloma", year: null, singer: "Alberto Amor", genre: "tango", active: true, source: "archiv", status: "ok", spotify: { uri: "spotify:track:pal", id: "pal", name: "Paloma" } };
-  const { page, ctx, errors } = await open({ auth: LOGGED, store: { seedVersion: 2, archive: [old] } });
-  const s = await store(page);
-  assert.equal(s.archive.filter((x) => x.title === "Paloma" && x.orq === "Rodolfo Biagi").length, 1);
-  const p = s.archive.find((x) => x.title === "Paloma" && x.orq === "Rodolfo Biagi");
-  assert.equal(p.year, 1945);
-  assert.equal(p.genre, "vals");
-  assert.equal(p.spotify.uri, "spotify:track:pal");
-  assert.equal(p.status, "ok");
-  assert.ok(s.archive.filter((x) => x.orq === "Rodolfo Biagi").length >= 30);
-  assert.deepEqual(errors, []);
-  await ctx.close();
-});
-
-await test("Feste Spotify-Zuordnungen werden übernommen, eigene bleiben", async () => {
+await test("Archiv kommt aus dem Code: alte Änderungen und eigene Songs verschwinden, Zuordnungen bleiben", async () => {
   const ctx = await browser.newContext({ ...devices["iPhone 13"] });
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.route("**/js/tracks.js", (r) => r.fulfill({ contentType: "text/javascript", body: 'const TRACKS_VERSION = 1; const TRACKS = { "osvaldo-pugliese-la-yumba-1946": { id: "yumba123", name: "La Yumba" }, "osvaldo-pugliese-negracha-1948": { id: "neg456" } };' }));
+  await page.route("**/js/tracks.js", (r) => r.fulfill({ contentType: "text/javascript", body: 'const TRACKS_VERSION = 1; const TRACKS = { "osvaldo-pugliese-la-yumba-1946": { id: "yumba123", name: "La Yumba" } };' }));
   await page.addInitScript(() => {
     if (sessionStorage.getItem("seeded")) return;
     sessionStorage.setItem("seeded", "1");
     localStorage.clear();
-    localStorage.setItem("orquesta.v1", JSON.stringify({ seedVersion: 99, settings: { clientId: "x" }, archive: [
-      { id: "osvaldo-pugliese-la-yumba-1946", orq: "Osvaldo Pugliese", title: "La yumba", year: 1946, singer: "", genre: "tango", active: true, source: "archiv", spotify: null, status: "open" },
-      { id: "osvaldo-pugliese-negracha-1948", orq: "Osvaldo Pugliese", title: "Negracha", year: 1948, singer: "", genre: "tango", active: true, source: "archiv", spotify: { uri: "spotify:track:mine", id: "mine" }, status: "ok" }
+    localStorage.setItem("orquesta.v1", JSON.stringify({ settings: { clientId: "x", orchestras: ["Gibt es nicht"] }, removed: ["carlos-di-sarli-bahia-blanca-1957"], archive: [
+      { id: "osvaldo-pugliese-la-yumba-1946", orq: "Osvaldo Pugliese", title: "La yumba", year: 1946, singer: "", genre: "tango", active: false, level: "schwer", source: "archiv", spotify: { uri: "spotify:track:mine", id: "mine" }, status: "ok" },
+      { id: "osvaldo-pugliese-negracha-1948", orq: "Osvaldo Pugliese", title: "Negracha", year: 1999, singer: "", genre: "tango", active: true, source: "archiv", spotify: { uri: "spotify:track:neg", id: "neg", artists: "Osvaldo Pugliese" }, status: "auto" },
+      { id: "juan-darienzo-loca-1942", orq: "Juan D'Arienzo", title: "Loca", year: 1942, singer: "", genre: "tango", active: true, source: "archiv", spotify: { uri: "spotify:track:tb", id: "tb", artists: "La Juan D'Arienzo" }, status: "auto" },
+      { id: "sp-xyz", orq: "Eigenes", title: "Importiert", genre: "tango", active: true, source: "import", spotify: { uri: "spotify:track:xyz" }, status: "ok" }
     ] }));
   });
   await page.goto(BASE);
   await page.waitForTimeout(300);
   const s = await store(page);
+  const n = await page.evaluate(() => ARCHIVE_DEFAULT.length);
+  assert.equal(s.archive.length, n, "genau das Archiv aus dem Code");
+  assert.ok(!s.archive.some((x) => x.source !== "archiv"), "importierte Songs entfernt");
+  assert.ok(s.archive.some((x) => x.title === "Bahía Blanca"), "gelöschter Song wieder da");
   const y = s.archive.find((x) => x.title === "La yumba");
-  assert.equal(y.status, "fixed");
-  assert.equal(y.spotify.uri, "spotify:track:yumba123");
-  assert.equal(s.archive.find((x) => x.title === "Negracha").spotify.id, "mine", "eigene Bestätigung bleibt");
+  assert.equal(y.spotify.id, "yumba123", "feste Zuordnung aus dem Code");
+  assert.equal(y.active, true); assert.ok(!y.level, "eigene Schwierigkeit verworfen");
+  const ng = s.archive.find((x) => x.title === "Negracha");
+  assert.equal(ng.year, 1948, "Angaben aus dem Code"); assert.equal(ng.spotify.id, "neg", "gefundene Aufnahme gemerkt");
+  assert.equal(s.archive.find((x) => x.title === "Loca" && x.orq === "Juan D'Arienzo").spotify, null, "Tribute-Band verworfen");
+  assert.deepEqual(s.settings.orchestras, []);
+  assert.equal(s.removed, undefined);
   assert.deepEqual(errors, []);
   await ctx.close();
 });
 
-await test("Schwierigkeit: Auswahl filtert den Topf, Archiv zeigt und ändert sie", async () => {
+await test("Schwierigkeit: Auswahl filtert den Topf", async () => {
   const { page, ctx, errors } = await open({ auth: LOGGED });
   const n = async () => +(await page.locator(".sticky-cta p").textContent()).match(/\d+/)[0];
   const all = await n();
-  await page.locator('[data-act="level"][data-l="leicht"]').click();
-  const easy = await n();
-  assert.ok(easy > 30 && easy < all, `leicht ${easy} von ${all}`);
+  await page.locator('[data-act="level"][data-l="schwer"]').click();
+  const hard = await n();
+  assert.ok(hard > 30 && hard < all, `schwer ${hard} von ${all}`);
   await page.getByRole("button", { name: "Spiel starten" }).click();
   const s = await store(page);
   const cur = s.archive.find((x) => x.id === s.game.current.songId);
-  assert.equal(await page.evaluate((c) => songLevel(c), cur), "leicht");
+  assert.equal(await page.evaluate((c) => songLevel(c), cur), "schwer");
   await page.getByRole("button", { name: "Aufdecken" }).click();
-  assert.match(await page.locator(".reveal .meta").textContent(), /Leicht/);
-  // im Archiv auf „schwer“ setzen
-  await page.locator(".tabbar [data-tab=archive]").click();
-  await page.locator("input.search").fill("la yumba");
-  assert.match(await page.locator(".row.song .lv").textContent(), /Leicht/);
-  await page.locator(".row.song").click();
-  await page.locator('[name="level"]').selectOption("schwer");
-  await page.getByRole("button", { name: "Sichern" }).click();
-  assert.equal((await store(page)).archive.find((x) => x.title === "La yumba").level, "schwer");
-  await shot(page, "8-archiv-schwierigkeit-hell");
+  assert.match(await page.locator(".reveal .meta").textContent(), /Schwer/);
   assert.deepEqual(errors, []);
   await ctx.close();
 });

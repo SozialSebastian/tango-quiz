@@ -2,8 +2,8 @@
 "use strict";
 
 (async () => {
-  const seeded = seedArchive();
-  if (applyFixedTracks() || seeded) save();
+  buildArchive();
+  save();
   // laufendes Spiel: aktueller Song wurde aus dem Archiv entfernt → nächsten nehmen
   const g = store.game;
   if (g && !g.finished && g.current && !songById(g.current.songId)) {

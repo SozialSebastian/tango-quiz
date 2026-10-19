@@ -1,21 +1,9 @@
 /* Orquesta – Standard-Archiv: bekannte Aufnahmen der Época de Oro
    Jede Zeile: [Orchester, Titel, Jahr, Sänger, Art]
    Sänger: "" = instrumental, null = nicht hinterlegt. Art: tango | vals | milonga
-   Neue Songs unten anhängen und ARCHIVE_VERSION erhöhen – sie kommen dann bei allen dazu,
-   eigene Änderungen im Archiv bleiben erhalten. */
+   Das Archiv ist in der App nicht veränderbar – Änderungen und Korrekturen nur hier im Code.
+   Nach Änderungen in sw.js die VERSION erhöhen, dann haben alle Geräte den neuen Stand. */
 "use strict";
-
-const ARCHIVE_VERSION = 6;
-
-// Einträge früherer Archiv-Stände, die durch korrigierte ersetzt wurden (alte ID → neue Zeile mit Jahr)
-const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma",
-  // Stand 4: Jahre ergänzt bzw. korrigiert
-  "carlos-di-sarli-griseta", "carlos-di-sarli-alma-mia", "carlos-di-sarli-pena-mulata", "carlos-di-sarli-la-capilla-blanca",
-  "carlos-di-sarli-nada", "carlos-di-sarli-porteno-y-bailarin", "carlos-di-sarli-patotero-sentimental", "anibal-troilo-c-t-v-1941",
-  // Stand 5: Jahr bzw. Sänger korrigiert
-  "carlos-di-sarli-champagne-tango-1944", "lucio-demare-malena-1942", "lucio-demare-sorbos-amargos-1942",
-  // Stand 6: entfernt (auf Spotify keine passende Aufnahme gefunden)
-  "osvaldo-fresedo-vida-mia-1933", "osvaldo-pugliese-remembranza", "juan-darienzo-el-marne-1939", "juan-darienzo-pampa-1951", "anibal-troilo-tarde-gris-1946", "anibal-troilo-palomita-blanca-1944", "carlos-di-sarli-nido-gaucho-1942", "ricardo-tanturi-bajo-el-cono-azul-1942"];
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo

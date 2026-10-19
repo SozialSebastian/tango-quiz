@@ -65,10 +65,6 @@ function loadStore() {
   s.settings.genres = { ...DEFAULT_SETTINGS.genres, ...(s.settings.genres || {}) };
   s.game = s.game || null;
   s.games = Array.isArray(s.games) ? s.games : [];      // abgeschlossene Spiele, neueste zuerst
-  s.seedVersion = s.seedVersion || 0;
-  s.removed = Array.isArray(s.removed) ? s.removed : [];   // gelöschte Standard-Songs nicht wieder anlegen
-  // Version 2: Songs, die wegen eines verschluckten Suchfehlers als „nicht gefunden“ markiert wurden, neu suchen
-  if ((s.fix || 0) < 2) { for (const x of s.archive) if (x.status === "missing") x.status = "open"; s.fix = 2; }
   return s;
 }
 
@@ -78,46 +74,29 @@ function save() {
   catch (e) { toast("Speichern fehlgeschlagen – ist der Speicher voll?"); }
 }
 
-/* Standard-Archiv einspielen: neue Standard-Songs ergänzen, eigene Änderungen bleiben */
+/* Archiv: kommt ausschließlich aus dem Code (js/archive-data.js, js/tracks.js, js/levels.js).
+   In der App ist es nicht veränderbar. Gemerkt wird nur, welche Spotify-Aufnahme ein Gerät für Songs
+   ohne feste Zuordnung selbst gefunden hat (Status „auto“/„missing“), damit nicht jedes Mal neu gesucht wird. */
 function songId(orq, title, year) { return norm(`${orq} ${title} ${year || ""}`).replace(/ /g, "-"); }
-function seedArchive(force = false) {
-  if (!force && store.seedVersion >= ARCHIVE_VERSION) return false;
-  // ersetzte Standard-Songs entfernen; eine Spotify-Zuordnung wandert zum neuen Eintrag
-  const carried = new Map();
-  store.archive = store.archive.filter((s) => {
-    if (s.source !== "archiv" || !ARCHIVE_REPLACED.includes(s.id)) return true;
-    if (s.spotify) carried.set(norm(`${s.orq} ${s.title}`), { spotify: s.spotify, status: s.status, active: s.active });
-    return false;
-  });
-  const have = new Set(store.archive.map((s) => s.id));
-  let added = 0;
-  for (const [orq, title, year, singer, genre] of ARCHIVE_DEFAULT) {
+function buildArchive() {
+  const cache = new Map();
+  for (const s of store.archive || []) {
+    if (s.status === "auto" && s.spotify && !/^la juan d.?arienzo/i.test(s.spotify.artists || "")) cache.set(s.id, { spotify: s.spotify, status: "auto" });
+    else if (s.status === "missing") cache.set(s.id, { spotify: null, status: "missing" });
+  }
+  store.archive = ARCHIVE_DEFAULT.map(([orq, title, year, singer, genre]) => {
     const id = songId(orq, title, year);
-    if (have.has(id) || (!force && store.removed.includes(id))) continue;
-    const c = carried.get(norm(`${orq} ${title}`));
-    store.archive.push({ id, orq, title, year, singer, genre, active: c ? c.active : true, source: "archiv", spotify: c ? c.spotify : null, status: c ? c.status : "open" });
-    added++;
-  }
-  if (force) store.removed = [];
-  store.seedVersion = ARCHIVE_VERSION;
-  return added;
-}
-
-/* Feste Zuordnungen (js/tracks.js) übernehmen. Eigene, bestätigte Zuordnungen bleiben unangetastet. */
-function applyFixedTracks() {
-  if (typeof TRACKS === "undefined" || (store.tracksVersion || 0) >= TRACKS_VERSION) return 0;
-  let n = 0;
-  for (const s of store.archive) {
-    // automatisch gefundene Aufnahmen der heutigen Tribute-Band „La Juan D'Arienzo“ verwerfen
-    if (s.status === "auto" && s.spotify && /^la juan d.?arienzo/i.test(s.spotify.artists || "")) { s.spotify = null; s.status = "open"; }
-    const t = TRACKS[s.id];
-    if (!t || s.status === "ok") continue;
-    s.spotify = { uri: `spotify:track:${t.id}`, id: t.id, name: t.name || s.title, artists: t.artists || "", album: t.album || "", release: t.release || "", image: t.image || "", duration: t.duration || 0 };
-    s.status = "fixed";
-    n++;
-  }
-  store.tracksVersion = TRACKS_VERSION;
-  return n;
+    const t = typeof TRACKS !== "undefined" ? TRACKS[id] : null;
+    const c = cache.get(id);
+    const spotify = t
+      ? { uri: `spotify:track:${t.id}`, id: t.id, name: t.name || title, artists: t.artists || "", album: t.album || "", release: t.release || "", image: t.image || "", duration: t.duration || 0 }
+      : c ? c.spotify : null;
+    return { id, orq, title, year, singer, genre, active: true, source: "archiv", spotify, status: t ? "fixed" : c ? c.status : "open" };
+  });
+  delete store.removed; delete store.seedVersion; delete store.tracksVersion; delete store.fix;
+  // Orchester-Auswahl auf vorhandene Orchester beschränken
+  const names = new Set(store.archive.map((s) => s.orq));
+  store.settings.orchestras = store.settings.orchestras.filter((o) => names.has(o));
 }
 
 function orchestraNames() {

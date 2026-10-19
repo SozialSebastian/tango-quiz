@@ -173,7 +173,6 @@ function renderTurn() {
         <p class="title">${esc(song.title)}</p>
         ${song.year ? `<p class="eyebrow">Jahr</p><p class="year">${esc(song.year)}</p>` : ""}
         <p class="muted meta">${meta}</p>
-        ${(song.status === "auto" || song.status === "fixed") && song.spotify ? `<p class="muted small">Gespielt: ${esc(song.spotify.name)} – ${esc(song.spotify.artists)} <button class="link" data-act="editSong" data-id="${esc(song.id)}">stimmt nicht?</button></p>` : ""}
       </section>
       <p class="muted center">Was hat <b>${esc(p.name)}</b> erkannt?</p>
       <div class="marks">

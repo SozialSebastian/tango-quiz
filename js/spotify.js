@@ -1,11 +1,11 @@
-/* Orquesta – Spotify: Login (PKCE), Wiedergabe über Spotify Connect, Suche, Playlist-Import
+/* Orquesta – Spotify: Login (PKCE), Wiedergabe über Spotify Connect, Suche als Rückfall
    Kein Server nötig: Die App meldet sich direkt bei Spotify an und steuert die Spotify-App fern. */
 "use strict";
 
 const SP_AUTH = "https://accounts.spotify.com/authorize";
 const SP_TOKEN = "https://accounts.spotify.com/api/token";
 const SP_API = "https://api.spotify.com/v1";
-const SP_SCOPES = "user-read-playback-state user-modify-playback-state playlist-read-private playlist-read-collaborative";
+const SP_SCOPES = "user-read-playback-state user-modify-playback-state";
 
 class SpotifyError extends Error {
   constructor(status, reason, message) { super(message || reason || `Spotify ${status}`); this.status = status; this.reason = reason || ""; }
@@ -311,66 +311,4 @@ async function matchSong(song) {
   }
   save();
   return song.status === "auto";
-}
-
-function parseSpotifyId(input, kind) {
-  const s = String(input || "").trim();
-  const m = s.match(new RegExp(`(?:open\\.spotify\\.com/(?:intl-[a-z]+/)?${kind}/|spotify:${kind}:)([A-Za-z0-9]{22})`));
-  if (m) return m[1];
-  return /^[A-Za-z0-9]{22}$/.test(s) ? s : null;
-}
-
-async function trackById(id) { return api(`/tracks/${id}`); }
-
-/* ================= Playlists ================= */
-async function myPlaylists() {
-  const out = [];
-  let offset = 0;
-  for (let i = 0; i < 6; i++) {
-    const j = await api("/me/playlists", { query: { limit: 50, offset } });
-    out.push(...((j && j.items) || []).filter(Boolean));
-    if (!j || !j.next) break;
-    offset += 50;
-  }
-  return out;
-}
-
-async function playlistInfo(id) { return api(`/playlists/${id}`, { query: { fields: "id,name,owner(id,display_name)" } }); }
-
-async function playlistTracks(id) {
-  const out = [];
-  let offset = 0;
-  for (let i = 0; i < 40; i++) {
-    let j;
-    try { j = await api(`/playlists/${id}/items`, { query: { limit: 50, offset } }); }
-    catch (e) {
-      if (e.status === 403 || e.status === 404) throw new SpotifyError(e.status, "PLAYLIST", "Spotify gibt nur eigene oder gemeinsame Playlists frei. Kopiere die Playlist in Spotify in eine eigene („Zu anderer Playlist hinzufügen“) und importiere dann diese.");
-      throw e;
-    }
-    for (const x of (j && j.items) || []) {
-      const t = x && (x.item || x.track);
-      if (t && t.type === "track" && !t.is_local && t.uri) out.push(t);
-    }
-    if (!j || !j.next) break;
-    offset += 50;
-  }
-  return out;
-}
-
-// Spotify-Track → Archiv-Eintrag
-function trackToSong(t) {
-  const artists = t.artists || [];
-  const orq = orchestraFromArtist(artists[0] ? artists[0].name : "");
-  const isOrq = (n) => /orquesta|orchestra|sexteto|quinteto|cuarteto/i.test(n) || ORCHESTRAS.some((o) => o.keys.some((k) => norm(n).includes(k)));
-  const singers = artists.slice(1).map((a) => a.name).filter((n) => !isOrq(n));
-  let singer = singers.length ? singers.join(", ") : null;
-  const feat = t.name.match(/\((?:feat\.?|con|canta|vocals?:?)\s+([^)]+)\)/i);
-  if (!singer && feat) singer = feat[1].trim();
-  const text = `${t.name} ${(t.album && t.album.name) || ""}`;
-  const ym = text.match(/\b(19[1-6]\d)\b/);
-  const genre = /\b(vals|valsecito|waltz)\b/.test(norm(text)) ? "vals" : /\bmilonga\b/.test(norm(t.name)) ? "milonga" : "tango";
-  return {
-    id: "sp-" + t.id, orq, title: cleanTitle(t.name), year: ym ? +ym[1] : null, singer, genre,
-    active: true, source: "import", spotify: trackInfo(t), status: "ok"
-  };
 }
