@@ -5,7 +5,7 @@
    eigene Änderungen im Archiv bleiben erhalten. */
 "use strict";
 
-const ARCHIVE_VERSION = 5;
+const ARCHIVE_VERSION = 6;
 
 // Einträge früherer Archiv-Stände, die durch korrigierte ersetzt wurden (alte ID → neue Zeile mit Jahr)
 const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civica", "rodolfo-biagi-lagrimas-y-sonrisas", "rodolfo-biagi-campo-afuera", "rodolfo-biagi-paloma",
@@ -13,7 +13,9 @@ const ARCHIVE_REPLACED = ["rodolfo-biagi-racing-club", "rodolfo-biagi-union-civi
   "carlos-di-sarli-griseta", "carlos-di-sarli-alma-mia", "carlos-di-sarli-pena-mulata", "carlos-di-sarli-la-capilla-blanca",
   "carlos-di-sarli-nada", "carlos-di-sarli-porteno-y-bailarin", "carlos-di-sarli-patotero-sentimental", "anibal-troilo-c-t-v-1941",
   // Stand 5: Jahr bzw. Sänger korrigiert
-  "carlos-di-sarli-champagne-tango-1944", "lucio-demare-malena-1942", "lucio-demare-sorbos-amargos-1942"];
+  "carlos-di-sarli-champagne-tango-1944", "lucio-demare-malena-1942", "lucio-demare-sorbos-amargos-1942",
+  // Stand 6: entfernt (auf Spotify keine passende Aufnahme gefunden)
+  "osvaldo-fresedo-vida-mia-1933", "osvaldo-pugliese-remembranza", "juan-darienzo-el-marne-1939", "juan-darienzo-pampa-1951", "anibal-troilo-tarde-gris-1946", "anibal-troilo-palomita-blanca-1944", "carlos-di-sarli-nido-gaucho-1942", "ricardo-tanturi-bajo-el-cono-azul-1942"];
 
 const ARCHIVE_DEFAULT = [
   // Juan D'Arienzo
@@ -114,7 +116,6 @@ const ARCHIVE_DEFAULT = [
   // Ricardo Tanturi
   ["Ricardo Tanturi", "Recuerdo malevo", 1941, "Alberto Castillo", "tango"],
   ["Ricardo Tanturi", "Así se baila el tango", 1942, "Alberto Castillo", "tango"],
-  ["Ricardo Tanturi", "Bajo el cono azul", 1942, "Alberto Castillo", "tango"],
   ["Ricardo Tanturi", "Una emoción", 1943, "Enrique Campos", "tango"],
 
   // Pedro Laurenz
@@ -133,7 +134,6 @@ const ARCHIVE_DEFAULT = [
   ["Ángel D'Agostino", "Café Domínguez", 1955, "", "tango"],
 
   // Osvaldo Fresedo
-  ["Osvaldo Fresedo", "Vida mía", 1933, "Roberto Ray", "tango"],
   ["Osvaldo Fresedo", "Arrabalero", 1939, "", "tango"],
 
   // Rodolfo Biagi
@@ -157,7 +157,6 @@ const ARCHIVE_DEFAULT = [
   ["Juan D'Arienzo", "Milonga querida", 1938, "Alberto Echagüe", "milonga"],
   ["Juan D'Arienzo", "Estampa de varón", 1938, "Alberto Echagüe", "milonga"],
   ["Juan D'Arienzo", "Felicia", 1939, "", "tango"],
-  ["Juan D'Arienzo", "El Marne", 1939, "", "tango"],
   ["Juan D'Arienzo", "Castigo", 1939, "Alberto Echagüe", "vals"],
   ["Juan D'Arienzo", "Ay Aurora", 1939, "Alberto Echagüe", "vals"],
   ["Juan D'Arienzo", "Meta fierro", 1939, "Alberto Echagüe", "milonga"],
@@ -170,7 +169,6 @@ const ARCHIVE_DEFAULT = [
   ["Juan D'Arienzo", "Tirando a matar", 1942, "Héctor Mauré", "milonga"],
   ["Juan D'Arienzo", "Cortada de San Ignacio", 1942, "Héctor Mauré", "milonga"],
   ["Juan D'Arienzo", "Tu pañuelo", 1942, "Héctor Mauré", "vals"],
-  ["Juan D'Arienzo", "Pampa", 1951, "", "tango"],
   ["Juan D'Arienzo", "Independencia", null, "", "tango"],
   ["Juan D'Arienzo", "El internado", null, "", "tango"],
   ["Juan D'Arienzo", "El entrerriano", null, "", "tango"],
@@ -195,7 +193,6 @@ const ARCHIVE_DEFAULT = [
   ["Osvaldo Pugliese", "Pata ancha", null, "", "tango"],
   ["Osvaldo Pugliese", "Desde el alma", null, "", "vals"],
   ["Osvaldo Pugliese", "Nochero soy", null, "Alberto Morán", "tango"],
-  ["Osvaldo Pugliese", "Remembranza", null, "Alberto Morán", "tango"],
 
   // Aníbal Troilo
   ["Aníbal Troilo", "Yo soy el tango", 1941, "Francisco Fiorentino", "tango"],
@@ -294,14 +291,12 @@ const ARCHIVE_DEFAULT = [
   ["Aníbal Troilo", "Marioneta", 1944, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Naranjo en flor", 1944, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Luna llena", 1944, "Floreal Ruiz", "tango"],
-  ["Aníbal Troilo", "Palomita blanca", 1944, "Floreal Ruiz, Alberto Marino", "vals"],
   ["Aníbal Troilo", "Equipaje", 1945, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "La noche que te fuiste", 1945, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Yuyo verde", 1945, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Llorarás, llorarás", 1945, "Floreal Ruiz", "vals"],
   ["Aníbal Troilo", "Cimarrón de ausencia", 1945, "Floreal Ruiz, Alberto Marino", "tango"],
   ["Aníbal Troilo", "Adiós pampa mía", 1945, "Floreal Ruiz, Alberto Marino", "tango"],
-  ["Aníbal Troilo", "Tarde gris", 1946, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Confesión", 1947, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Y dicen que no te quiero", 1947, "Floreal Ruiz", "tango"],
   ["Aníbal Troilo", "Flor de lino", 1947, "Floreal Ruiz", "vals"],
@@ -340,7 +335,6 @@ const ARCHIVE_DEFAULT = [
   ["Carlos Di Sarli", "Zorro plateado", 1943, "Roberto Rufino", "tango"],
   ["Carlos Di Sarli", "Un día llegará", 1943, "Roberto Rufino", "vals"],
   // Carlos Di Sarli – Alberto Podestá und weitere
-  ["Carlos Di Sarli", "Nido gaucho", 1942, "Alberto Podestá", "tango"],
   ["Carlos Di Sarli", "Va a cantar un ruiseñor", 1942, "Alberto Podestá", "tango"],
   ["Carlos Di Sarli", "Alzame en tus brazos", 1942, "Alberto Podestá", "vals"],
   ["Carlos Di Sarli", "Rosas de otoño", 1942, "Alberto Podestá", "vals"],

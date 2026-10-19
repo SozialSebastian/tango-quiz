@@ -4,6 +4,13 @@
 (async () => {
   const seeded = seedArchive();
   if (applyFixedTracks() || seeded) save();
+  // laufendes Spiel: aktueller Song wurde aus dem Archiv entfernt → nächsten nehmen
+  const g = store.game;
+  if (g && !g.finished && g.current && !songById(g.current.songId)) {
+    const n = nextSong(g);
+    g.current = n ? { songId: n.id, phase: "ready", marks: {}, pos: null } : null;
+    save();
+  }
   const back = await handleSpotifyCallback();
   render();
   if (back && isLoggedIn()) { spotifyMe().then(() => { if (tab === "settings") render(); }).catch(() => {}); pickDevice().then(() => render()).catch(() => {}); }
