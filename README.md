@@ -4,6 +4,7 @@ Tango-Quiz als Web-App (PWA) fürs iPhone: Spotify spielt eine Aufnahme der Épo
 
 ## Funktionen
 - **Spiel:** 1–8 Spieler reihum, 3/5/10 Runden oder ohne Ende, Auswahl nach Tango/Vals/Milonga und Orchester, Startpunkt Anfang oder zufällig; geraten werden Orchester, Titel, Jahr (Toleranz einstellbar) und optional Sänger
+- **Schwierigkeit:** Leicht, Mittel, Schwer oder Alle – jeder Song ist nach Bekanntheit eingestuft (`js/levels.js`), im Archiv änderbar
 - **Gespielte Spiele:** Verlauf auf der Spiel-Seite; je Spieler aufklappbar, was richtig war und wofür es Punkte gab
 - **Archiv:** ~100 bekannte Aufnahmen (D'Arienzo, Di Sarli, Pugliese, Troilo, Caló, Canaro, Tanturi, Laurenz, Demare …), bearbeiten, eigene Songs, Spotify-Zuordnung prüfen und korrigieren
 - **Playlist-Import:** eigene Spotify-Playlists ins Archiv übernehmen (Orchester, Sänger, Jahr werden ausgelesen)
@@ -20,6 +21,8 @@ Tango-Quiz als Web-App (PWA) fürs iPhone: Spotify spielt eine Aufnahme der Épo
 |---|---|
 | `index.html`, `styles.css` | Seite und Aussehen (hell/dunkel) |
 | `js/archive-data.js` | Standard-Archiv – neue Songs anhängen und `ARCHIVE_VERSION` erhöhen |
+| `js/levels.js` | Schwierigkeit je Song (leicht/schwer-Listen, Rest mittel) |
+| `js/tracks.js` | feste Spotify-Zuordnungen (`node tools/tracks-from-backup.mjs <Sicherung>`) |
 | `js/core.js` | Speicher (`localStorage` „orquesta.v1“ – Schlüssel nie ändern), Hilfen, Navigation |
 | `js/spotify.js` | Anmeldung, Wiedergabe, Suche, Playlists |
 | `js/game.js` | Spiel |

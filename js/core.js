@@ -48,6 +48,7 @@ const DEFAULT_SETTINGS = {
   repeat: true,         // Song läuft in Schleife, bis „Weiter“
   rounds: 5,            // Runden pro Spieler, 0 = ohne Ende
   genres: { tango: true, vals: true, milonga: true },
+  level: "alle",        // leicht | mittel | schwer | alle
   orchestras: [],       // leer = alle
   deviceId: "",
   deviceName: ""

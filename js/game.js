@@ -6,7 +6,8 @@ let busy = false;   // läuft gerade eine Spotify-Aktion?
 /* ================= Topf ================= */
 function eligible(s, f = store.settings) {
   return s.active && s.status !== "missing" && f.genres[s.genre] !== false &&
-    (!f.orchestras.length || f.orchestras.includes(s.orq));
+    (!f.orchestras.length || f.orchestras.includes(s.orq)) &&
+    (!f.level || f.level === "alle" || songLevel(s) === f.level);
 }
 function poolSize() { return store.archive.filter((s) => eligible(s)).length; }
 
@@ -68,7 +69,8 @@ function spotifyCard() {
 
 function renderSetup() {
   const s = store.settings;
-  const count = (g) => store.archive.filter((x) => x.active && x.status !== "missing" && x.genre === g && (!s.orchestras.length || s.orchestras.includes(x.orq))).length;
+  const count = (g) => store.archive.filter((x) => eligible(x, { ...s, genres: { [g]: true } }) && x.genre === g).length;
+  const lvCount = (l) => store.archive.filter((x) => eligible(x, { ...s, level: l })).length;
   const n = poolSize();
   $("#view").innerHTML = `
     <header class="hero">
@@ -92,6 +94,11 @@ function renderSetup() {
     <h2>Runden pro Spieler</h2>
     <div class="seg" role="radiogroup" aria-label="Runden pro Spieler">
       ${[3, 5, 10, 0].map((r) => `<button role="radio" aria-checked="${s.rounds === r}" data-act="rounds" data-r="${r}">${r || "∞"}</button>`).join("")}
+    </div>
+
+    <h2>Schwierigkeit</h2>
+    <div class="seg" role="radiogroup" aria-label="Schwierigkeit">
+      ${[...Object.entries(LEVELS), ["alle", "Alle"]].map(([k, v]) => `<button role="radio" aria-checked="${(s.level || "alle") === k}" data-act="level" data-l="${k}">${v}<span class="seg-count">${lvCount(k)}</span></button>`).join("")}
     </div>
 
     <h2>Musik</h2>
@@ -156,7 +163,7 @@ function renderTurn() {
   } else {
     const cats = guessCats(song);
     const sum = catPoints(cats, c.marks);
-    const meta = [song.singer === "" ? "instrumental" : song.singer, GENRES[song.genre]].filter(Boolean).map(esc).join(" · ");
+    const meta = [LEVELS[songLevel(song)], song.singer === "" ? "instrumental" : song.singer, GENRES[song.genre]].filter(Boolean).map(esc).join(" · ");
     body = `
       <section class="reveal">
         ${song.spotify && song.spotify.image ? `<img class="cover" src="${esc(song.spotify.image)}" alt="" width="64" height="64">` : ""}
@@ -208,6 +215,7 @@ actions.login = () => spotifyLogin();
 actions.playerName = (el) => { store.players[+el.dataset.i] = el.value.trim() || `Spieler ${+el.dataset.i + 1}`; save(); };
 actions.addPlayer = () => { store.players.push(`Spieler ${store.players.length + 1}`); save(); renderSetup(); const ins = $$(".player-row input"); const last = ins[ins.length - 1]; if (last) { last.focus(); last.select(); } };
 actions.removePlayer = (el) => { store.players.splice(+el.dataset.i, 1); save(); renderSetup(); };
+actions.level = (el) => { store.settings.level = el.dataset.l; save(); renderSetup(); };
 actions.rounds = (el) => { store.settings.rounds = +el.dataset.r; save(); renderSetup(); };
 actions.genre = (el) => {
   const g = store.settings.genres;
@@ -242,7 +250,7 @@ function newGame(players) {
   const g = {
     players: players.map((name) => ({ name, score: 0 })),
     rounds: s.rounds, round: 1, turn: 0, used: [], history: [],
-    filters: { genres: { ...s.genres }, orchestras: [...s.orchestras] },
+    filters: { genres: { ...s.genres }, orchestras: [...s.orchestras], level: s.level },
     current: null, finished: false
   };
   const song = nextSong(g);

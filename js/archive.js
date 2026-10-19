@@ -68,6 +68,7 @@ function archiveGroups(keys, groups) {
           <span class="status ${STATUS[s.status]?.c || "open"}" title="${STATUS[s.status]?.t || ""}" aria-label="${STATUS[s.status]?.t || ""}"></span>
           <span class="grow"><span class="t">${esc(s.title)}</span><br>
             <span class="muted small">${[s.year, s.singer === "" ? "instrumental" : s.singer, GENRES[s.genre]].filter(Boolean).map(esc).join(" · ")}</span></span>
+          <span class="lv lv-${songLevel(s)}">${LEVELS[songLevel(s)]}</span>
           <span class="chev" aria-hidden="true">›</span>
         </button>`).join("")}
     </section>`).join("");
@@ -116,6 +117,10 @@ function songForm(s) {
       <label class="field"><span>Jahr</span><input name="year" inputmode="numeric" pattern="[0-9]*" value="${esc(s.year || "")}" placeholder="z. B. 1941"></label>
       <label class="field"><span>Art</span><select name="genre">${Object.entries(GENRES).map(([k, v]) => `<option value="${k}" ${s.genre === k ? "selected" : ""}>${v}</option>`).join("")}</select></label>
     </div>
+    <label class="field"><span>Schwierigkeit</span><select name="level">
+      <option value="" ${!s.level ? "selected" : ""}>Automatisch (${esc(LEVELS[songLevel({ ...s, level: null })])})</option>
+      ${Object.entries(LEVELS).map(([k, v]) => `<option value="${k}" ${s.level === k ? "selected" : ""}>${v}</option>`).join("")}
+    </select></label>
     <label class="field"><span>Sänger</span><input name="singer" value="${esc(s.singer || "")}" placeholder="leer = unbekannt" autocomplete="off"></label>
     <label class="row check plain-row"><input type="checkbox" name="instrumental" ${s.singer === "" ? "checked" : ""}><span>Instrumental</span></label>`;
 }
@@ -129,6 +134,7 @@ function readForm(d, s) {
   const y = parseInt(f("year").value, 10);
   s.year = y >= 1900 && y <= 2100 ? y : null;
   s.genre = f("genre").value;
+  s.level = f("level").value || null;
   s.singer = f("instrumental").checked ? "" : (f("singer").value.trim() || null);
   if (changedIdentity && s.status !== "ok") { s.spotify = null; s.status = "open"; }
   return true;

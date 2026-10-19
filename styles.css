@@ -290,3 +290,10 @@ details.all-turns { overflow: hidden; }
 
 .stuck { text-align: left; width: 100%; }
 .stuck p { font-size: 15px; }
+
+/* Schwierigkeit */
+.seg-count { display: block; font-size: 11px; font-weight: 500; opacity: .7; line-height: 1.1; }
+.seg button { line-height: 1.15; padding-top: 4px; padding-bottom: 4px; }
+.lv { flex: none; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); }
+.lv-leicht { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+.lv-schwer { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }

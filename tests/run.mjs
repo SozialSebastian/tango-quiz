@@ -363,6 +363,32 @@ await test("Feste Spotify-Zuordnungen werden übernommen, eigene bleiben", async
   await ctx.close();
 });
 
+await test("Schwierigkeit: Auswahl filtert den Topf, Archiv zeigt und ändert sie", async () => {
+  const { page, ctx, errors } = await open({ auth: LOGGED });
+  const n = async () => +(await page.locator(".sticky-cta p").textContent()).match(/\d+/)[0];
+  const all = await n();
+  await page.locator('[data-act="level"][data-l="leicht"]').click();
+  const easy = await n();
+  assert.ok(easy > 30 && easy < all, `leicht ${easy} von ${all}`);
+  await page.getByRole("button", { name: "Spiel starten" }).click();
+  const s = await store(page);
+  const cur = s.archive.find((x) => x.id === s.game.current.songId);
+  assert.equal(await page.evaluate((c) => songLevel(c), cur), "leicht");
+  await page.getByRole("button", { name: "Aufdecken" }).click();
+  assert.match(await page.locator(".reveal .meta").textContent(), /Leicht/);
+  // im Archiv auf „schwer“ setzen
+  await page.locator(".tabbar [data-tab=archive]").click();
+  await page.locator("input.search").fill("la yumba");
+  assert.match(await page.locator(".row.song .lv").textContent(), /Leicht/);
+  await page.locator(".row.song").click();
+  await page.locator('[name="level"]').selectOption("schwer");
+  await page.getByRole("button", { name: "Sichern" }).click();
+  assert.equal((await store(page)).archive.find((x) => x.title === "La yumba").level, "schwer");
+  await shot(page, "8-archiv-schwierigkeit-hell");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 await test("Dunkler Modus: Bildschirmfotos ohne Fehler", async () => {
   const { page, ctx, errors } = await open({ auth: LOGGED, dark: true, settings: { singer: true } });
   await shot(page, "1-start-dunkel");

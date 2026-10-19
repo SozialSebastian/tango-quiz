@@ -1,11 +1,12 @@
 // Offline-Cache für die App. Bei jeder Änderung an den Dateien VERSION erhöhen.
-const VERSION = "orquesta-v18";
+const VERSION = "orquesta-v19";
 const FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./js/archive-data.js",
   "./js/tracks.js",
+  "./js/levels.js",
   "./js/core.js",
   "./js/spotify.js",
   "./js/game.js",
