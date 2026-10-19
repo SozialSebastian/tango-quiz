@@ -119,5 +119,6 @@ actions.importArchive = async (el) => {
 
 actions.reseed = () => {
   const n = seedArchive(true);
+  store.tracksVersion = 0; applyFixedTracks();   // wiederhergestellte Songs bekommen ihre feste Spotify-Zuordnung
   save(); toast(n ? `${n} Standard-Songs wiederhergestellt.` : "Alle Standard-Songs sind schon da.");
 };
